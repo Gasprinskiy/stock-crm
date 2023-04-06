@@ -1,9 +1,14 @@
-import { off } from 'process';
-import { ProductRepo } from '../interface.js'
 import { Product, ProductPayload } from './../../entity/product/index.js';
 import pgPromise from "pg-promise";
 
-export class ProductRepoImpl implements ProductRepo {
+
+export interface ProductRepoInter {
+    getProductByID(ts: pgPromise.ITask<{}>, id: number): Promise<Product>;
+    createProduct(ts: pgPromise.ITask<{}>, p: ProductPayload): Promise<Product>;
+    findProductList(ts: pgPromise.ITask<{}>, limit: number, offset: number): Promise<Product[]>;
+}
+
+export class ProductRepository implements ProductRepoInter {
     async getProductByID(ts: pgPromise.ITask<{}>, id: number): Promise<Product> {
         const sqlQuery = `
         SELECT pr.product_id, pr.product_name, pr.description, pr.tags, pr.creation_date

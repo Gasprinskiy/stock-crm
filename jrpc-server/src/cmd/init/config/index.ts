@@ -3,7 +3,7 @@ import fs from "fs"
 import path from "path";
 import { fileURLToPath } from 'url';
 
-interface config {
+interface ConfigIntr {
     readonly postgres: {
         host: string;
         port: number;
@@ -20,7 +20,7 @@ interface config {
 }
 
 
-export class Config implements config {
+export class Config implements ConfigIntr {
     postgres: { host: string; port: number; db: string; user: string; pass: string; };
     server: { port: number; };
 

@@ -1,34 +1,33 @@
-import express from "express";
-import pgPromise from "pg-promise";
-import { ProductPayload } from "../internal/entity/product/index.js";
-import { ProductRepoImpl } from "../internal/repository/postgres/product.js";
-import { RunServer } from "./init/server_run/index.js";
-import { ConnectToPostgress } from "./init/db_connection/index.js";
-import { Config } from "./init/config/index.js";
 
-const app = express();
-const pgp = pgPromise();
+import { Config } from "./init/config/index.js";
+import { PostgresDBase } from "./init/db_connection/index.js";
+import { Server } from "./init/server_run/index.js";
+import { Repository } from "../internal/repository/index.js";
+
+import { ProductPayload } from "../internal/entity/product/index.js";
 
 const config = new Config();
 
 const pgConectionString = config.PgConnectionString();
-const db = ConnectToPostgress(pgp, pgConectionString);
+const pgDbase = new PostgresDBase(pgConectionString);
+const db = pgDbase.ConnectToDb()
 
 const serverPort = config.ServerPort();
-const jsrpcServer = RunServer(app, serverPort);
+const server = new Server(serverPort);
+const jsrpcServer = server.RunServer()
 
-const productRepo = new ProductRepoImpl()
+const repository = new Repository()
 
 jsrpcServer.addMethod("getProduct", async ({ id }: {id: number}) => {
     const resposne = await db.tx(ts => {
-        return productRepo.getProductByID(ts, id)
+        return repository.Product.getProductByID(ts, id)
     })
     return resposne
 });
 
 jsrpcServer.addMethod("createProduct", async (params: ProductPayload) => {
     const resposne = await db.tx(ts => {
-        return productRepo.createProduct(ts, params)
+        return repository.Product.createProduct(ts, params)
     })
     return resposne
 })

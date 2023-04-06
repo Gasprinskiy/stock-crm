@@ -1,27 +1,45 @@
 import { JSONRPCServer } from "json-rpc-2.0";
-import { Express } from "express";
+// import { Express } from "express";
+import express from "express";
 import bodyParser from "body-parser";
 
-// RunServer запуск jrpc сервера и возврат экземпляра класса JSONRPCServer для последующего взаимодействия
-export const RunServer = (app: Express, port: number) : JSONRPCServer => {
-    console.info("Запуск JRPC сервера...")
+interface ServerInter {
+    App: express.Express;
+    readonly Port: number;
+    JRPCServer: JSONRPCServer;
 
-    const jsrpcServer = new JSONRPCServer();
+    RunServer(): JSONRPCServer;
+}
 
-    app.use(bodyParser.json());
-    app.post("", (req, res) => {
-        const jsonRPCRequest = req.body;
+export class Server implements ServerInter {
+    App: express.Express;
+    Port: number;
+    JRPCServer: JSONRPCServer;
 
-        jsrpcServer.receive(jsonRPCRequest)
-        .then((response) => {
-            if (response) {
-                res.json(response);
-            } else {
-                res.sendStatus(204);
-            }
+    constructor(port: number) {
+        this.App = express()
+        this.Port = port
+        this.JRPCServer = new JSONRPCServer()
+    }
+
+    RunServer(): JSONRPCServer<void> {
+        console.info("Запуск JRPC сервера...")
+
+        this.App.use(bodyParser.json());
+        this.App.post("", (req, res) => {
+            const jsonRPCRequest = req.body;
+
+            this.JRPCServer.receive(jsonRPCRequest)
+            .then((response) => {
+                if (response) {
+                    res.json(response);
+                } else {
+                    res.sendStatus(204);
+                }
+            });
         });
-    });
-    app.listen(port, () => console.info(`JRPC cервер запущен на порту ${port}`));
+        this.App.listen(this.Port, () => console.info(`JRPC cервер запущен на порту ${this.Port}`));
 
-    return jsrpcServer
+        return this.JRPCServer 
+    }
 }
