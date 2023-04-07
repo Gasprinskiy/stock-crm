@@ -4,6 +4,9 @@ services:
   jrpc-server:
     image: jrpc-server
     container_name: jrpc-server-container
+    environment:
+      - LOG_PATH=../../../../log
+      - CONF_PATH=../../../../config.yaml
     build: 
       context: ..
       dockerfile: ./docker/Dockerfile
@@ -14,7 +17,7 @@ services:
       - "3000:3000"
     links:
       - db
-    command: yarn start
+    command: yarn start 
   db:
     image: postgres:14.5-alpine
     container_name: postgres-container

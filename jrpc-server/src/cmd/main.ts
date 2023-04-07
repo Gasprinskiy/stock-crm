@@ -1,12 +1,17 @@
-
 import { Config } from "./init/config/index.js";
+import { Logger } from "./init/logger/index.js";
 import { PostgresDBase } from "./init/db_connection/index.js";
 import { Server } from "./init/server_run/index.js";
 import { Repository } from "../internal/repository/index.js";
 
+
 import { ProductPayload } from "../internal/entity/product/index.js";
 
-const config = new Config();
+
+const { env } = process
+
+const logger = new Logger(env.LOG_PATH!)
+const config = new Config(env.CONF_PATH!);
 
 const pgConectionString = config.PgConnectionString();
 const pgDbase = new PostgresDBase(pgConectionString);
@@ -31,6 +36,8 @@ jsrpcServer.addMethod("createProduct", async (params: ProductPayload) => {
     })
     return resposne
 })
+
+logger.Info("FUCK YOU")
 
 
 // const connectToServer = async (db: pgPromise.IDatabase<{}>) => {

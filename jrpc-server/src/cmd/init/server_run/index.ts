@@ -5,8 +5,8 @@ import bodyParser from "body-parser";
 
 interface ServerInter {
     App: express.Express;
-    readonly Port: number;
     JRPCServer: JSONRPCServer;
+    readonly Port: number;
 
     RunServer(): JSONRPCServer;
 }

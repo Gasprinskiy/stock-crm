@@ -12,7 +12,7 @@
   "scripts": {
     "dev": "npx nodemon",
     "build": "rimraf ./build && npx tsc && node ",
-    "start": "yarn build && node build/cmd/main",
+    "start": "yarn build && node build/cmd/main | pino-pretty --colorize",
     "lint": "npx eslint ./src",
     "format": "npx eslint ./src --fix"
   },
@@ -42,6 +42,9 @@
     "node-dependency-injection": "^3.0.5",
     "pg": "^8.10.0",
     "pg-promise": "^11.4.3",
+    "pino": "^8.11.0",
+    "pino-pretty": "^10.0.0",
+    "pino-tee": "^0.3.0",
     "read-yaml-file": "^2.1.0",
     "yaml": "^2.2.1"
   }

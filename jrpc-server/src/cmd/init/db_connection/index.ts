@@ -1,5 +1,4 @@
 import pgPromise from "pg-promise";
-import { IClient } from "pg-promise/typescript/pg-subset.js";
 
 interface PostgresInter {
     PgApp: pgPromise.IMain<{}>;
@@ -9,7 +8,7 @@ interface PostgresInter {
 }
 
 export class PostgresDBase implements PostgresInter {
-    PgApp: pgPromise.IMain<{}, IClient>;
+    PgApp: pgPromise.IMain<{}>;
     ConnectionString: string;
 
     constructor(conString: string) {
@@ -18,7 +17,7 @@ export class PostgresDBase implements PostgresInter {
     }
 
     // ConnectToDb Подключение к базе postgress возвращение экземпляпа DB
-    ConnectToDb(): pgPromise.IDatabase<{}, IClient> {
+    ConnectToDb(): pgPromise.IDatabase<{}> {
         console.info("Подключение к postgres...");
     
         const db = this.PgApp(this.ConnectionString)

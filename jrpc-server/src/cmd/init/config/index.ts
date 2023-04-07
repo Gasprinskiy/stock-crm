@@ -24,10 +24,10 @@ export class Config implements ConfigIntr {
     postgres: { host: string; port: number; db: string; user: string; pass: string; };
     server: { port: number; };
 
-    constructor() {
+    constructor(confPath: string) {
         const __filename = fileURLToPath(import.meta.url);
         const __dirname = path.dirname(__filename);
-        const filepath = path.join(__dirname, "../../../../config.yaml")    
+        const filepath = path.join(__dirname, confPath)    
         const file = fs.readFileSync(filepath, "utf8")
         const params = YAML.parse(file)
 

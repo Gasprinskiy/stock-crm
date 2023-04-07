@@ -1,3 +1,5 @@
+#!/bin/bash
+
 export ROOT=../docker/
 
 cd $ROOT
