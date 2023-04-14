@@ -1,6 +1,8 @@
 import { Repository } from "../../repository/index.js"
 import { Logger } from '../../../tools/logger/index.js'
 import { Product, CreateProductPayload, FindProductListPayload } from './../../entity/product/index.js';
+import { GlobalErrorsMap } from "../../entity/global/index.js";
+import { handleRepoDefaultError } from "../../../tools/errhandler/usecase/index.js";
 import pgPromise from "pg-promise";
 
 export interface ProdcuctUsecaseInter {
@@ -21,6 +23,12 @@ export class ProdcuctUsecase implements ProdcuctUsecaseInter {
     }
 
     async getProductByID(ts: pgPromise.ITask<{}>, id: number): Promise<Product | Error> {
+        return handleRepoDefaultError(() => {
+            return this.repository.Product.getProductByID(ts, id)
+        }, this.log, "не удалось получить продукт по ID")
+    }
+
+    async createProduct(ts: pgPromise.ITask<{}>, p: CreateProductPayload): Promise<Product|Error> {
         return {
             product_id: 0,
             product_name: "string",
@@ -28,5 +36,15 @@ export class ProdcuctUsecase implements ProdcuctUsecaseInter {
             tags: "string",
             creation_date: new Date()
         }
+    }
+
+    async findProductList(ts: pgPromise.ITask<{}>, p: FindProductListPayload): Promise<Product[]|Error> {
+        return [{
+            product_id: 0,
+            product_name: "string",
+            description: "string",
+            tags: "string",
+            creation_date: new Date()
+        }]
     }
 }
