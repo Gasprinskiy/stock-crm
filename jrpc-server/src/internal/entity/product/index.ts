@@ -6,8 +6,15 @@ export interface Product {
     creation_date: Date;
 }
 
-export interface ProductPayload {
+// Параметры запросов
+export interface CreateProductPayload {
     product_name: string;
     description: string;
     tags: string;
+}
+
+export interface FindProductListPayload {
+    limit: number;
+    offset: number;
+    stock_id: number;
 }

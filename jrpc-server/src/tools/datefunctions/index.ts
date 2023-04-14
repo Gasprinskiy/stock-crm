@@ -1,0 +1,1 @@
+export const timezone_date_string = new Date().toLocaleString("uz-UZ", { timeZone: "Asia/Tashkent" })

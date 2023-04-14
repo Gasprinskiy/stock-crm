@@ -5,7 +5,7 @@ services:
     image: jrpc-server
     container_name: jrpc-server-container
     environment:
-      - LOG_PATH=../../../../log
+      - LOG_PATH=./log.txt
       - CONF_PATH=../../../../config.yaml
     build: 
       context: ..
