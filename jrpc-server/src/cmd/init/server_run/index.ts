@@ -2,58 +2,53 @@ import express from "express";
 import bodyParser from "body-parser";
 import { JSONRPCServer, JSONRPCErrorCode } from "json-rpc-2.0";
 import { Logger } from "../../../tools/logger/index.js";
-import { JrpcErrorsMap } from "../../../internal/entity/jsrpc/index.js";
+import JrpcErrorsMap  from "../../../internal/entity/jsrpc/errors/index.js";
 
-interface ServerInter {
-    App: express.Express;
-    Log: Logger;
-    JRPCServer: JSONRPCServer;
-    readonly Port: number;
+export class Server  {
+    private app: express.Express;
+    private jrpcServer: JSONRPCServer;
+    private serverLog: Logger; // TO:DO no file loger
+    private log: Logger; 
+    private port: number;
 
-    RunServer(): JSONRPCServer;
-}
-
-export class Server implements ServerInter {
-    App: express.Express;
-    JRPCServer: JSONRPCServer;
-    Log: Logger;
-    Port: number;
     constructor(port: number) {
-        this.App = express()
-        this.Log = new Logger("server-run");
-        this.JRPCServer = new JSONRPCServer()
-        this.Port = port
+        this.app = express()
+        this.jrpcServer = new JSONRPCServer()
+        this.log = new Logger("jrpc-handler");
+        this.serverLog = new Logger("jrpc-server-run")
+        this.port = port
     }
 
     // запуск JSONRPC сервера для приема именованных методов
-    RunServer(): JSONRPCServer<void> {
-        this.Log.Info("Запуск JRPC сервера...")
+    public Run(): JSONRPCServer<void> {
+        this.serverLog.Info("Запуск JRPC сервера...")
 
-        this.App.use(bodyParser.json());
-        this.App.post("", (req, res) => {
+        this.app.use(bodyParser.json());
+        this.app.post("", (req, res) => {
             const jsonRPCRequest = req.body;
 
-            this.JRPCServer.receive(jsonRPCRequest)
+            this.jrpcServer.receive(jsonRPCRequest)
             .then((response) => {
                 if (response) {
                     if (response.error) {
                         if (response.error.code === JSONRPCErrorCode.MethodNotFound) {
-                            this.Log.Error(`метод ${req.body.method} не найден`)
+                            this.log.Error(`метод ${req.body.method} не найден`)
                             response.error = JrpcErrorsMap.MethodNotFound
                         } else {
-                            this.Log.Error(`ошибка при вызове метода ${req.body.method}: ${response.error.message}`)
+                            this.log.Error(`ошибка при вызове метода ${req.body.method}: ${response.error.message}`)
                             response.error = JrpcErrorsMap.InternalError
                         }
                     }       
                     res.json(response);
                 } else {
-                    this.Log.Warn(`нет ответа от метода ${req.body.method}`)
+                    this.log.Warn(`нет ответа от метода ${req.body.method}`)
                     res.sendStatus(204);
                 }
             });
         });
-        this.App.listen(this.Port, () => this.Log.Info(`JRPC cервер запущен на порту ${this.Port}`));
+        
+        this.app.listen(this.port, () => this.serverLog.Info(`JRPC cервер запущен на порту ${this.port}`));
 
-        return this.JRPCServer 
+        return this.jrpcServer 
     }
 }

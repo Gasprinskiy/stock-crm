@@ -2,32 +2,26 @@ import { Config } from './init/config/index.js'
 import { PostgresDBase } from './init/db_connection/index.js'
 import { Server } from './init/server_run/index.js'
 import { Repository } from '../internal/repository/index.js'
-
-import { CreateProductPayload } from '../internal/entity/product/index.js'
+import { Usecase } from '../internal/usecase/index.js'
+import { JRPCHandler } from '../external/jsonrpc/index.js'
 
 const { env } = process
 const config = new Config(env.CONF_PATH!)
 
 const pgConectionString = config.PgConnectionString()
 const pgDbase = new PostgresDBase(pgConectionString)
-const db = await pgDbase.ConnectToDb()
+const db = await pgDbase.Connect()
 
 const serverPort = config.ServerPort()
 const server = new Server(serverPort)
-const jsrpcServer = await server.RunServer()
+const jsrpcServer = await server.Run()
 
 const repository = new Repository()
+const usecase = new Usecase(repository)
 
-jsrpcServer.addMethod('getProduct', async (id: number) => {
-    const resposne = await db.tx((ts) => {
-        return repository.Product.getProductByID(ts, id)
-    })
-    return resposne
+const jsrpcHandler = new JRPCHandler({
+    jrpc: jsrpcServer,
+    db: db,
+    ui: usecase,
 })
-
-jsrpcServer.addMethod('createProduct', async (params: CreateProductPayload) => {
-    const resposne = await db.tx((ts) => {
-        return repository.Product.createProduct(ts, params)
-    })
-    return resposne
-})
+jsrpcHandler.RegisterMethods()

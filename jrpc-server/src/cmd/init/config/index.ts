@@ -3,26 +3,10 @@ import fs from "fs"
 import path from "path";
 import { fileURLToPath } from 'url';
 
-interface ConfigIntr {
-    readonly postgres: {
-        host: string;
-        port: number;
-        db: string;
-        user: string;
-        pass: string;
-    };
-    readonly server: {
-        port: number;
-    };
 
-    PgConnectionString(): string;
-    ServerPort(): number;
-}
-
-
-export class Config implements ConfigIntr {
-    postgres: { host: string; port: number; db: string; user: string; pass: string; };
-    server: { port: number; };
+export class Config {
+    private postgres: { host: string; port: number; db: string; user: string; pass: string; };
+    private server: { port: number; };
 
     constructor(confPath: string) {
         const __filename = fileURLToPath(import.meta.url);
@@ -35,11 +19,11 @@ export class Config implements ConfigIntr {
         this.server = params.server
     }
 
-    PgConnectionString(): string {
+    public PgConnectionString(): string {
         return `postgres://${this.postgres.user}:${this.postgres.pass}@${this.postgres.host}:${this.postgres.port}/${this.postgres.db}`
     }
 
-    ServerPort(): number {
+    public ServerPort(): number {
         return this.server.port
     }
 }

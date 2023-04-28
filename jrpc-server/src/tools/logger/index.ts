@@ -38,6 +38,7 @@ export class Logger implements LoggerInter {
     CustomLog: pino.Logger<pino.LoggerOptions>;
     constructor(prefix: string) {  
         this.Path = env.LOG_PATH!;
+        // this.Path = "./log.txt"
         this.Prefix = prefix;
         this.CustomLog = pino();
     }

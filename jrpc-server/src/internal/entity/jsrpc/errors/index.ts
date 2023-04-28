@@ -1,5 +1,4 @@
-
-export const JrpcErrorsMap = {
+export default {
     MethodNotFound: {
         code: -1,
         message: "метод не найден"

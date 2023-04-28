@@ -1,37 +1,30 @@
 import pgPromise from "pg-promise";
 import { Logger } from "../../../tools/logger/index.js";
 
-interface PostgresInter {
-    PgApp: pgPromise.IMain<{}>;
-    ConnectionString: string;
-    Log: Logger
-
-    ConnectToDb(): Promise<pgPromise.IDatabase<{}>> ;
-}
-
-export class PostgresDBase implements PostgresInter {
-    PgApp: pgPromise.IMain<{}>;
-    ConnectionString: string;
-    Log: Logger;
+export class PostgresDBase {
+    private pgpApp: pgPromise.IMain<{}>;
+    private connectionString: string;
+    private log: Logger;
 
     constructor(conString: string) {
-        this.PgApp = pgPromise();
-        this.ConnectionString = conString;
-        this.Log = new Logger("postgress-connection");
+        this.pgpApp = pgPromise();
+        this.connectionString = conString;
+        this.log = new Logger("postgress-connection");
     }
 
     // ConnectToDb Подключение к базе postgress возвращение экземпляпа DB
-    async ConnectToDb(): Promise<pgPromise.IDatabase<{}>> {
-        this.Log.Info("Подключение к postgres...");
+    public async Connect(): Promise<pgPromise.IDatabase<{}>> {
+        this.log.Info("Подключение к postgres...");
     
-        const db = this.PgApp(this.ConnectionString)
-
+        const db = this.pgpApp(this.connectionString)
+        
         await db.connect()
         .then(() => {
-            this.Log.Info("Подключение к postgres прошло успешно");
+            this.log.Info("Подключение к postgres прошло успешно");
         })
         .catch((err: Error) => {
-            this.Log.Error(`Ошибка при подключении к postgres: ${err}`,)
+            this.log.Error(`Ошибка при подключении к postgres: ${err.message}`,)
+            process.exit(1)
         })
 
         return db
