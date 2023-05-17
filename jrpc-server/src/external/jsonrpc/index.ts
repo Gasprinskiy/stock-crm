@@ -2,12 +2,14 @@ import { JSONRPCServer } from "json-rpc-2.0";
 import pgPromise from "pg-promise";
 
 import { ProductHandler } from './core/product.js'
+import { EmployeeHandler } from "./core/employee.js";
 import { Usecase } from "../../internal/usecase/index.js";
 
 
 export class JRPCHandler {
     private handlers: [
-        ProductHandler: ProductHandler
+        Product: ProductHandler,
+        Employee: EmployeeHandler
     ]
     
     constructor(params: { 
@@ -16,7 +18,8 @@ export class JRPCHandler {
         ui: Usecase; 
     }){
         this.handlers = [
-            new ProductHandler(params.jrpc, params.db, params.ui)
+            new ProductHandler(params.jrpc, params.db, params.ui),
+            new EmployeeHandler(params.jrpc, params.db, params.ui)
         ]
     }
 
