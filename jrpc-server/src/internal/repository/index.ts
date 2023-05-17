@@ -1,12 +1,11 @@
+import { EmployeeRepoInter, EmployeeRepo } from "./postgres/employee.js";
 import { ProductRepoInter, ProductRepository } from "./postgres/product.js";
 
-interface RepositoryInter {
+export class Repository {
     Product: ProductRepoInter;
-}
-
-export class Repository implements RepositoryInter {
-    Product: ProductRepoInter;
+    Employee: EmployeeRepoInter;
     constructor(){
         this.Product = new ProductRepository();
+        this.Employee = new EmployeeRepo()
     }
 }
