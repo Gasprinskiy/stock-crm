@@ -1,4 +1,4 @@
-FROM node
+FROM node:18-alpine3.16
 
 ENV BASE_PATH "/jun_code/nodets/jrpc-server"
 
