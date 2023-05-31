@@ -36,11 +36,14 @@ export class Logger implements LoggerInter {
     Path: string;
     Prefix: string;
     CustomLog: pino.Logger<pino.LoggerOptions>;
-    constructor(prefix: string) {  
+    private noFileLog: boolean;
+    constructor(prefix: string, noFileLog: boolean = false) {  
         this.Path = env.LOG_PATH!;
         // this.Path = "./log.txt"
         this.Prefix = prefix;
         this.CustomLog = pino();
+
+        this.noFileLog = noFileLog;
     }
 
     Info(message: string): void {
@@ -77,15 +80,17 @@ export class Logger implements LoggerInter {
     }
 
     private async writeToFileLog(type: string, message: string) {
-        const logTimeString = timezone_date_string.replace("/", ".").replace(", ", " ")
-        const log = `type: ${type}, message: ${message}, time: ${logTimeString}\r\n`
-        await fs.appendFile(this.Path, log, (err) => {
-            if(err) {
-                this.CustomLog.error("не удалось записать лог в файл, ошибка: ", err)
+        if (!this.noFileLog) {
+            const logTimeString = timezone_date_string.replace("/", ".").replace(", ", " ")
+            const log = `type: ${type}, message: ${message}, time: ${logTimeString}\r\n`
+            await fs.appendFile(this.Path, log, (err) => {
+                if(err) {
+                    this.CustomLog.error("не удалось записать лог в файл, ошибка: ", err)
+                    return
+                }
                 return
-            }
-            return
-        })
+            })
+        }
     }
     
     

@@ -1,5 +1,5 @@
 import pgPromise from "pg-promise";
-import { GlobalErrorsMap } from "../../../internal/entity/global/index.js";
+import { GlobalErrorsMap }  from "../../internal/entity/global/error/index.js";
 
 // обработчик ошибок postgress репо методов
 export const handleRequestError = async <T>(callback: Function) :  Promise<T | Error> => {

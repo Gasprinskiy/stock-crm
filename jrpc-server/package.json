@@ -49,5 +49,17 @@
     "pino-tee": "^0.3.0",
     "read-yaml-file": "^2.1.0",
     "yaml": "^2.2.1"
+  },
+  "imports": {
+    "#config": "./src/cmd/init/config/index.js",
+    "#db": "./src/cmd/init/db_connection/index.js",
+    "#server_run": "./src/cmd/init/server_run/index.js",
+    "#jrpc_handler": "./src/external/jsonrpc/index.js",
+    "#tools/*": "./src/tools/*/index.js",
+    "#entity/*": "./src/internal/entity/*/entity/index.js",
+    "#entity_params/*": "./src/internal/entity/*/params/index.js",
+    "#entity_error/*": "./src/internal/entity/*/error/index.js",
+    "#repository": "./src/internal/repository/index.js",
+    "#usecase": "./src/internal/usecase/index.js"
   }
 }

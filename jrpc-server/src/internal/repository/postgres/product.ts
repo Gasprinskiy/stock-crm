@@ -1,16 +1,16 @@
-import { handleRequestError } from '../../../tools/errhandler/pg/index.js';
-import { Product, CreateProductPayload, FindProductListPayload } from './../../entity/product/index.js';
 import pgPromise from "pg-promise";
-
+import { Product } from "../../entity/product/entity/index.js";
+import { CreateProductParam, FindProductListParam } from "../../entity/product/params/index.js"
+import { handleRequestError } from "../../../tools/pgerrhandler/index.js";
 
 export interface ProductRepoInter {
-    getProductByID(ts: pgPromise.ITask<{}>, id: number): Promise<Product|Error>;
-    createProduct(ts: pgPromise.ITask<{}>, p: CreateProductPayload): Promise<Product|Error>;
-    findProductList(ts: pgPromise.ITask<{}>, p: FindProductListPayload): Promise<Product[]|Error>;
+    GetProductByID(ts: pgPromise.ITask<{}>, id: number): Promise<Product|Error>;
+    CreateProduct(ts: pgPromise.ITask<{}>, p: CreateProductParam): Promise<Product|Error>;
+    FindProductList(ts: pgPromise.ITask<{}>, limit: number, offset: number): Promise<Product[]|Error>;
 }
 
 export class ProductRepository implements ProductRepoInter {
-    async getProductByID(ts: pgPromise.ITask<{}>, id: number): Promise<Product|Error> {
+    public async GetProductByID(ts: pgPromise.ITask<{}>, id: number): Promise<Product|Error> {
         const sqlQuery = `
         SELECT pr.product_id, pr.product_name, pr.description, pr.tags, pr.creation_date
         FROM product pr
@@ -22,26 +22,24 @@ export class ProductRepository implements ProductRepoInter {
         })
     }
 
-    async createProduct(ts: pgPromise.ITask<{}>, p: CreateProductPayload): Promise<Product|Error> {
+    public async CreateProduct(ts: pgPromise.ITask<{}>, p: CreateProductParam): Promise<Product|Error> {
         const sqlQuery = `
         INSERT INTO product(product_name, description, tags)
         VALUES ('${p.product_name}', '${p.description}', '${p.tags}')
         RETURNING product_id, product_name, description, tags, creation_date`
 
-        return handleRequestError(() => {
-            return ts.one(sqlQuery)
-        })
+        return ts.one(sqlQuery)
     }
 
-    async findProductList(ts: pgPromise.ITask<{}>, p: FindProductListPayload): Promise<Product[]|Error> {
+    public async FindProductList(ts: pgPromise.ITask<{}>, limit: number, offset: number): Promise<Product[]|Error> {
         const sqlQuery = `
-        SELECT pr.product_id, pr.product_name, pr.description, pr.tags, pr.creation_date, ps.amount
+        SELECT pr.product_id, pr.product_name, pr.description, pr.tags, pr.creation_date, ps.amount, ps.stock_id
         FROM product pr
             JOIN product$stocks ps on(ps.product_id = pr.product_id)
-        WHERE ps.stock_id = ${p.stock_id}
+        ORDER BY pr.product_id
         DESC
-        LIMIT = ${p.limit}
-        OFFSET = ${p.offset}`
+        LIMIT ${limit}
+        OFFSET ${offset}`
 
         return handleRequestError(() => {
             return ts.many(sqlQuery)

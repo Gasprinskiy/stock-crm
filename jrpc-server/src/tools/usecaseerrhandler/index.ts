@@ -1,5 +1,5 @@
-import { GlobalErrorsMap } from "../../../internal/entity/global/index.js"
-import { Logger } from "../../logger/index.js"
+import { GlobalErrorsMap }  from "../../internal/entity/global/error/index.js";
+import { Logger } from "../logger/index.js"
 
 export const handleRepoDefaultError = async <T>(callback: Function, log: Logger, logMsg: string) : Promise< T | Error> => {
     return await callback()

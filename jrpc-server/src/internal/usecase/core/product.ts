@@ -1,47 +1,64 @@
-import { Repository } from "../../repository/index.js"
-import { Logger } from '../../../tools/logger/index.js'
-import { Product, CreateProductPayload, FindProductListPayload } from './../../entity/product/index.js';
-import { Usecase } from '../index.js'
-import { handleRepoDefaultError } from "../../../tools/errhandler/usecase/index.js";
+import { GlobalErrorsMap } from '../../entity/global/error/index.js';
 import pgPromise from "pg-promise";
+import { Repository } from "../../repository/index.js";
+import { Logger } from "../../../tools/logger/index.js"
+import { Product } from '../../entity/product/entity/index.js';
+import { CreateProductParam, FindProductListParam } from "../../entity/product/params/index.js"
+import { handleRepoDefaultError } from "../../../tools/usecaseerrhandler/index.js";
+import { removeArrayDublicateByKey } from '../../../tools/unique/index.js';
 
 interface ProdcuctUsecaseInter {
-    getProductByID(ts: pgPromise.ITask<{}>, id: number): Promise<Product|Error>;
-    createProduct(ts: pgPromise.ITask<{}>, p: CreateProductPayload): Promise<Product|Error>;
-    findProductList(ts: pgPromise.ITask<{}>, p: FindProductListPayload): Promise<Product[]|Error>;
+    GetProductByID(ts: pgPromise.ITask<{}>, id: number): Promise<Product|Error>;
+    CreateProduct(ts: pgPromise.ITask<{}>, p: CreateProductParam): Promise<Product|Error>;
+    FindProductList(ts: pgPromise.ITask<{}>, p: FindProductListParam): Promise<Product[]|Error>;
 }
 
 export class ProductUsecase implements ProdcuctUsecaseInter {
     private repository: Repository;
     private log: Logger;
-    private bridge: Usecase;
 
-    constructor(repo: Repository, bi: Usecase) {
+    constructor(repo: Repository) {
         this.repository = repo;
-        this.bridge = bi
         this.log = new Logger("product")
     }
 
-    async getProductByID(ts: pgPromise.ITask<{}>, id: number): Promise<Product | Error> {
+    public async GetProductByID(ts: pgPromise.ITask<{}>, id: number): Promise<Product | Error> {
         return handleRepoDefaultError(() => {
-            return this.repository.Product.getProductByID(ts, id)
+            return this.repository.Product.GetProductByID(ts, id)
         }, this.log, "не удалось получить продукт по ID")
     }
 
-    async createProduct(ts: pgPromise.ITask<{}>, p: CreateProductPayload): Promise<Product | Error> {
+    public async CreateProduct(ts: pgPromise.ITask<{}>, p: CreateProductParam): Promise<Product | Error> {
         return handleRepoDefaultError(() => {
-            return this.repository.Product.createProduct(ts, p)
+            return this.repository.Product.CreateProduct(ts, p)
         }, this.log, "не удалось создать продукт")
     }
 
-    async findProductList(ts: pgPromise.ITask<{}>, p: FindProductListPayload): Promise<Product[] | Error> {
-        return handleRepoDefaultError(() => {
-            return this.repository.Product.findProductList(ts, p)
-        }, this.log, "не удалось найти список продуктов")
-    }
+    public async FindProductList(ts: pgPromise.ITask<{}>, p: FindProductListParam): Promise<Product[] | Error> {
+        const employeeResponse = await this.repository.Employee.GetEmployeeByLogin(ts, p.employee_login)
+        if (employeeResponse instanceof Error) {
+            this.log.Error(`не удалось найти сотрудника по логину, ошибка: ${employeeResponse}`)
+            return GlobalErrorsMap.ErrInternalError
+        } 
+        // выставить корренктный параметр offset перед загрузкой списка товаров
+        p.offset = p.offset - 1
+        p.offset = p.limit * p.offset
 
-    sumThenMinus(a: number, b: number, c: number): number {
-        const sum = this.bridge.Tempalte.sum(a, b)
-        return sum - c
-    } 
+        const productResponse = await this.repository.Product.FindProductList(ts, p.limit, p.offset)
+        if (productResponse instanceof Error) {
+            if (productResponse == GlobalErrorsMap.ErrNoData) {
+                return productResponse
+            }
+            this.log.Error(`не удалось загрузить список продуктов, ошибка: ${productResponse}`)
+            return GlobalErrorsMap.ErrInternalError
+        } 
+
+        // если сотрудник прикреплен к складу
+        if (employeeResponse.stock_id) {
+            return productResponse.filter(item => item.stock_id === employeeResponse.stock_id)
+        }
+
+        // если сотрудник не привязан к складу, удалить дубликаты из массива
+        return removeArrayDublicateByKey('product_id', productResponse)
+    }
 }

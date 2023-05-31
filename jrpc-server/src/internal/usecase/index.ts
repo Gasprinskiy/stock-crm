@@ -10,8 +10,8 @@ export class Usecase {
     Employee: EmployeeUsecase;
     Tempalte: TemplateUsecase;
     constructor(repo: Repository){
-        this.Product = new ProductUsecase(repo, this);
-        this.Employee = new EmployeeUsecase(repo)
+        this.Product = new ProductUsecase(repo);
+        this.Employee = new EmployeeUsecase(repo);
         this.Tempalte = new TemplateUsecase();
     }
 }

@@ -1,6 +1,5 @@
 import { JSONRPCServer } from "json-rpc-2.0";
 import pgPromise from "pg-promise";
-
 import { ProductHandler } from './core/product.js'
 import { EmployeeHandler } from "./core/employee.js";
 import { Usecase } from "../../internal/usecase/index.js";

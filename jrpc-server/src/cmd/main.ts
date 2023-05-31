@@ -1,4 +1,4 @@
-import { Config } from './init/config/index.js'
+import { Config } from './init/config/index.js';
 import { PostgresDBase } from './init/db_connection/index.js'
 import { Server } from './init/server_run/index.js'
 import { Repository } from '../internal/repository/index.js'
