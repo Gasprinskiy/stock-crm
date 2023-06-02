@@ -1,14 +1,15 @@
 
-export const removeArrayDublicateByKey = <T>(typeKey: keyof T, src: T[]): T[] => {
+export const removeArrayObjectDublicateByKey = <T>(typeKey: keyof T, src: T[]): T[] => {
     const uniqueArray : T[] = []
     const keysMap = new Set(src.map(item => item[typeKey]))
 
     Array.from(keysMap).forEach(key => {
-        const item = src.find(item => item[typeKey] === key)
-        if (item) {
-            uniqueArray.push(item)
-        }
+        uniqueArray.push(src.find(item => item[typeKey] === key)!)
     })
 
     return uniqueArray
+}
+
+export const removeArrayDublicate = <T>(src: T[]) : T[] => {
+    return Array.from(new Set(src))
 }
