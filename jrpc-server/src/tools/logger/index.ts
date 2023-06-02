@@ -83,13 +83,7 @@ export class Logger implements LoggerInter {
         if (!this.noFileLog) {
             const logTimeString = timezone_date_string.replace("/", ".").replace(", ", " ")
             const log = `type: ${type}, message: ${message}, time: ${logTimeString}\r\n`
-            await fs.appendFile(this.Path, log, (err) => {
-                if(err) {
-                    this.CustomLog.error("не удалось записать лог в файл, ошибка: ", err)
-                    return
-                }
-                return
-            })
+            fs.appendFileSync(this.Path, log)
         }
     }
     
