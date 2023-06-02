@@ -1,11 +1,11 @@
-import { GlobalErrorsMap } from '../../entity/global/error/index.js';
+import { GlobalErrorsMap, GlobalResponseErrors } from '../../entity/global/error/index.js';
 import pgPromise from "pg-promise";
 import { Repository } from "../../repository/index.js";
 import { Logger } from "../../../tools/logger/index.js"
 import { Product } from '../../entity/product/entity/index.js';
 import { CreateProductParam, FindProductListParam } from "../../entity/product/params/index.js"
 import { handleRepoDefaultError } from "../../../tools/usecaseerrhandler/index.js";
-import { removeArrayDublicateByKey } from '../../../tools/unique/index.js';
+import { removeArrayObjectDublicateByKey } from '../../../tools/unique/index.js';
 
 interface ProdcuctUsecaseInter {
     GetProductByID(ts: pgPromise.ITask<{}>, id: number): Promise<Product|Error>;
@@ -46,19 +46,20 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
 
         const productResponse = await this.repository.Product.FindProductList(ts, p.limit, p.offset)
         if (productResponse instanceof Error) {
-            if (productResponse == GlobalErrorsMap.ErrNoData) {
-                return productResponse
+            if (productResponse === GlobalErrorsMap.ErrNoData) {
+                return GlobalResponseErrors.ErrNoData
             }
             this.log.Error(`не удалось загрузить список продуктов, ошибка: ${productResponse}`)
-            return GlobalErrorsMap.ErrInternalError
+            return GlobalResponseErrors.ErrInternalError
         } 
 
         // если сотрудник прикреплен к складу
         if (employeeResponse.stock_id) {
+            // вернуть продукты со склада к которому он прикреплен
             return productResponse.filter(item => item.stock_id === employeeResponse.stock_id)
         }
 
         // если сотрудник не привязан к складу, удалить дубликаты из массива
-        return removeArrayDublicateByKey('product_id', productResponse)
+        return removeArrayObjectDublicateByKey('product_id', productResponse)
     }
 }
