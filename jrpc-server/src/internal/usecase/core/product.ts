@@ -33,7 +33,8 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
             return this.repository.Product.CreateProduct(ts, p)
         }, this.log, "не удалось создать продукт")
     }
-
+    
+    // FindProductList стандартная загрузка списка товаров
     public async FindProductList(ts: pgPromise.ITask<{}>, p: FindProductListParam): Promise<ProductListResponse | Error> {
         const employeeResponse = await this.repository.Employee.GetEmployeeByLogin(ts, p.employee_login)
         if (employeeResponse instanceof Error) {
@@ -44,39 +45,32 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
         p.offset = p.offset - 1
         p.offset = p.limit * p.offset
 
-        const productResponse = await this.repository.Product.FindProductList(ts, p.limit, p.offset)
+        // список товаров
+        const productResponse = await this.repository.Product.FindProductList(ts, p.limit, p.offset, employeeResponse.stock_id)
         if (productResponse instanceof Error) {
             if (productResponse === GlobalErrorsMap.ErrNoData) {
                 return GlobalResponseErrors.ErrNoData
             }
             this.log.Error(`не удалось загрузить список продуктов, ошибка: ${productResponse}`)
             return GlobalResponseErrors.ErrInternalError
+        }
+        
+        // количество страниц с продуктами
+        const pageCountResponse = await this.repository.Product.FindProductCount(ts, employeeResponse.stock_id)
+        if (pageCountResponse instanceof Error) {
+            this.log.Error(`не удалось загрузить общее количество товара, ошибка: ${productResponse}`)
+            return GlobalResponseErrors.ErrInternalError
         } 
 
         // если сотрудник прикреплен к складу
         if (employeeResponse.stock_id) {
-            const pageCountResponse = await this.repository.Product.ProductCountByStockID(ts, employeeResponse.stock_id)
-            if (pageCountResponse instanceof Error) {
-                this.log.Error(`не удалось загрузить общее количество товара, ошибка: ${productResponse}`)
-                return {
-                    product_list: productResponse.filter(item => item.stock_id === employeeResponse.stock_id),
-                    page_count: 0  
-                }
-            } 
+            // вернуть результат как есть
             return {
-                product_list: productResponse.filter(item => item.stock_id === employeeResponse.stock_id),
+                product_list: productResponse,
                 page_count: Math.ceil(pageCountResponse / p.limit)
             }
         }
         
-        const pageCountResponse = await this.repository.Product.CommonProductCount(ts)
-        if (pageCountResponse instanceof Error) {
-            this.log.Error(`не удалось загрузить общее количество товара, ошибка: ${productResponse}`)
-            return {
-                product_list: removeArrayObjectDublicateByKey('product_id', productResponse),
-                page_count: 0  
-            }
-        }
         // если сотрудник не привязан к складу, удалить дубликаты из массива
         return {
             product_list: removeArrayObjectDublicateByKey('product_id', productResponse),

@@ -6,9 +6,8 @@ import { handleRequestError } from "../../../tools/pgerrhandler/index.js";
 export interface ProductRepoInter {
     GetProductByID(ts: pgPromise.ITask<{}>, id: number): Promise<Product|Error>;
     CreateProduct(ts: pgPromise.ITask<{}>, p: CreateProductParam): Promise<Product|Error>;
-    FindProductList(ts: pgPromise.ITask<{}>, limit: number, offset: number): Promise<Product[]|Error>;
-    ProductCountByStockID(ts: pgPromise.ITask<{}>, stockID: number): Promise<number|Error>;
-    CommonProductCount(ts: pgPromise.ITask<{}>): Promise<number|Error>; 
+    FindProductList(ts: pgPromise.ITask<{}>, limit: number, offset: number, stockID: number): Promise<Product[]|Error>;
+    FindProductCount(ts: pgPromise.ITask<{}>, stockID: number): Promise<number|Error>;
 }
 
 export class ProductRepository implements ProductRepoInter {
@@ -33,11 +32,12 @@ export class ProductRepository implements ProductRepoInter {
         return ts.one(sqlQuery)
     }
 
-    public async FindProductList(ts: pgPromise.ITask<{}>, limit: number, offset: number): Promise<Product[]|Error> {
+    public async FindProductList(ts: pgPromise.ITask<{}>, limit: number, offset: number, stockID: number): Promise<Product[]|Error> {
         const sqlQuery = `
         SELECT pr.product_id, pr.product_name, pr.description, pr.tags, pr.creation_date, ps.amount, ps.stock_id
         FROM product pr
             JOIN product$stocks ps on(ps.product_id = pr.product_id)
+        ${stockID ? `WHERE ps.stock_id = ${stockID}`: ""}
         ORDER BY pr.product_id
         DESC
         LIMIT ${limit}
@@ -48,11 +48,15 @@ export class ProductRepository implements ProductRepoInter {
         })
     }
 
-    public async ProductCountByStockID(ts: pgPromise.ITask<{}>, stockID: number): Promise<number|Error> {
-        return 0
-    }
+    public async FindProductCount(ts: pgPromise.ITask<{}>, stockID: number): Promise<number|Error> {
+        const sqlQuery = `
+        SELECT count(pr.product_id)
+        FROM product pr
+            JOIN product$stocks ps ON(ps.product_id = pr.product_id)
+        ${stockID ? `WHERE ps.stock_id = ${stockID}`: ""}`
 
-    public async CommonProductCount(ts: pgPromise.ITask<{}>): Promise<number | Error> {
-        return 0
+        return handleRequestError(() => {
+            return ts.one(sqlQuery, stockID)
+        })
     }
 }
