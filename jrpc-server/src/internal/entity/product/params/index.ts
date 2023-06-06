@@ -10,7 +10,11 @@ export interface FindProductListParam {
     offset: number;
     employee_login: string;
     query: string | null;
-    price_from: number | null;
-    price_till: number | null;
     show_all: boolean;
+    price_range: ProductPriceRange;
+}
+
+export interface ProductPriceRange {
+    min_price: number;
+    max_price: number
 }
