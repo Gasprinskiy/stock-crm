@@ -6,3 +6,8 @@ export interface Product {
     creation_date: Date;
     stock_id: number;
 }
+
+export interface ProductListResponse {
+    product_list: Product[];
+    page_count: number;
+}

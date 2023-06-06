@@ -7,6 +7,8 @@ export interface ProductRepoInter {
     GetProductByID(ts: pgPromise.ITask<{}>, id: number): Promise<Product|Error>;
     CreateProduct(ts: pgPromise.ITask<{}>, p: CreateProductParam): Promise<Product|Error>;
     FindProductList(ts: pgPromise.ITask<{}>, limit: number, offset: number): Promise<Product[]|Error>;
+    ProductCountByStockID(ts: pgPromise.ITask<{}>, stockID: number): Promise<number|Error>;
+    CommonProductCount(ts: pgPromise.ITask<{}>): Promise<number|Error>; 
 }
 
 export class ProductRepository implements ProductRepoInter {
@@ -44,5 +46,13 @@ export class ProductRepository implements ProductRepoInter {
         return handleRequestError(() => {
             return ts.many(sqlQuery)
         })
+    }
+
+    public async ProductCountByStockID(ts: pgPromise.ITask<{}>, stockID: number): Promise<number|Error> {
+        return 0
+    }
+
+    public async CommonProductCount(ts: pgPromise.ITask<{}>): Promise<number | Error> {
+        return 0
     }
 }

@@ -2,7 +2,7 @@ import { GlobalErrorsMap, GlobalResponseErrors } from '../../entity/global/error
 import pgPromise from "pg-promise";
 import { Repository } from "../../repository/index.js";
 import { Logger } from "../../../tools/logger/index.js"
-import { Product } from '../../entity/product/entity/index.js';
+import { Product, ProductListResponse } from '../../entity/product/entity/index.js';
 import { CreateProductParam, FindProductListParam } from "../../entity/product/params/index.js"
 import { handleRepoDefaultError } from "../../../tools/usecaseerrhandler/index.js";
 import { removeArrayObjectDublicateByKey } from '../../../tools/unique/index.js';
@@ -10,7 +10,7 @@ import { removeArrayObjectDublicateByKey } from '../../../tools/unique/index.js'
 interface ProdcuctUsecaseInter {
     GetProductByID(ts: pgPromise.ITask<{}>, id: number): Promise<Product|Error>;
     CreateProduct(ts: pgPromise.ITask<{}>, p: CreateProductParam): Promise<Product|Error>;
-    FindProductList(ts: pgPromise.ITask<{}>, p: FindProductListParam): Promise<Product[]|Error>;
+    FindProductList(ts: pgPromise.ITask<{}>, p: FindProductListParam): Promise<ProductListResponse|Error>;
 }
 
 export class ProductUsecase implements ProdcuctUsecaseInter {
@@ -34,7 +34,7 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
         }, this.log, "не удалось создать продукт")
     }
 
-    public async FindProductList(ts: pgPromise.ITask<{}>, p: FindProductListParam): Promise<Product[] | Error> {
+    public async FindProductList(ts: pgPromise.ITask<{}>, p: FindProductListParam): Promise<ProductListResponse | Error> {
         const employeeResponse = await this.repository.Employee.GetEmployeeByLogin(ts, p.employee_login)
         if (employeeResponse instanceof Error) {
             this.log.Error(`не удалось найти сотрудника по логину, ошибка: ${employeeResponse}`)
@@ -55,11 +55,32 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
 
         // если сотрудник прикреплен к складу
         if (employeeResponse.stock_id) {
-            // вернуть продукты со склада к которому он прикреплен
-            return productResponse.filter(item => item.stock_id === employeeResponse.stock_id)
+            const pageCountResponse = await this.repository.Product.ProductCountByStockID(ts, employeeResponse.stock_id)
+            if (pageCountResponse instanceof Error) {
+                this.log.Error(`не удалось загрузить общее количество товара, ошибка: ${productResponse}`)
+                return {
+                    product_list: productResponse.filter(item => item.stock_id === employeeResponse.stock_id),
+                    page_count: 0  
+                }
+            } 
+            return {
+                product_list: productResponse.filter(item => item.stock_id === employeeResponse.stock_id),
+                page_count: Math.ceil(pageCountResponse / p.limit)
+            }
         }
-
+        
+        const pageCountResponse = await this.repository.Product.CommonProductCount(ts)
+        if (pageCountResponse instanceof Error) {
+            this.log.Error(`не удалось загрузить общее количество товара, ошибка: ${productResponse}`)
+            return {
+                product_list: removeArrayObjectDublicateByKey('product_id', productResponse),
+                page_count: 0  
+            }
+        }
         // если сотрудник не привязан к складу, удалить дубликаты из массива
-        return removeArrayObjectDublicateByKey('product_id', productResponse)
+        return {
+            product_list: removeArrayObjectDublicateByKey('product_id', productResponse),
+            page_count: Math.ceil(pageCountResponse / p.limit)
+        }
     }
 }
