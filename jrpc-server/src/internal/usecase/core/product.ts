@@ -34,19 +34,20 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
         }, this.log, "не удалось создать продукт")
     }
     
-    // FindProductList стандартная загрузка списка товаров
+    // FindProductList поиск товаров
     public async FindProductList(ts: pgPromise.ITask<{}>, p: FindProductListParam): Promise<ProductListResponse | Error> {
         const employeeResponse = await this.repository.Employee.GetEmployeeByLogin(ts, p.employee_login)
         if (employeeResponse instanceof Error) {
             this.log.Error(`не удалось найти сотрудника по логину, ошибка: ${employeeResponse}`)
-            return GlobalErrorsMap.ErrInternalError
+            return GlobalResponseErrors.ErrInternalError
         } 
+        
         // выставить корренктный параметр offset перед загрузкой списка товаров
         p.offset = p.offset - 1
         p.offset = p.limit * p.offset
 
         // список товаров
-        const productResponse = await this.repository.Product.FindProductList(ts, p.limit, p.offset, employeeResponse.stock_id)
+        const productResponse = await this.repository.Product.FindProductList(ts, p, employeeResponse.stock_id)
         if (productResponse instanceof Error) {
             if (productResponse === GlobalErrorsMap.ErrNoData) {
                 return GlobalResponseErrors.ErrNoData
