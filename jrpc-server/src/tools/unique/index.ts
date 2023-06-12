@@ -1,5 +1,5 @@
 
-export const removeArrayObjectDublicateByKey = <T>(typeKey: keyof T, src: T[]): T[] => {
+export const removeArrayDublicateByKey = <T>(typeKey: keyof T, src: T[]): T[] => {
     const uniqueArray : T[] = []
     const keysMap = new Set(src.map(item => item[typeKey]))
 
