@@ -5,7 +5,7 @@ import { Logger } from "../../../tools/logger/index.js"
 import { Product, ProductListResponse } from '../../entity/product/entity/index.js';
 import { CreateProductParam, FindProductListParam } from "../../entity/product/params/index.js"
 import { handleRepoDefaultError } from "../../../tools/usecaseerrhandler/index.js";
-import { removeArrayObjectDublicateByKey } from '../../../tools/unique/index.js';
+import { removeArrayDublicateByKey } from '../../../tools/unique/index.js';
 
 interface ProdcuctUsecaseInter {
     GetProductByID(ts: pgPromise.ITask<{}>, id: number): Promise<Product|Error>;
@@ -36,6 +36,7 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
     
     // FindProductList поиск товаров
     public async FindProductList(ts: pgPromise.ITask<{}>, p: FindProductListParam): Promise<ProductListResponse | Error> {
+        // получить работника по логину что бы далее загружать продукты по складу к которому он прикреплен
         const employeeResponse = await this.repository.Employee.GetEmployeeByLogin(ts, p.employee_login)
         if (employeeResponse instanceof Error) {
             this.log.Error(`не удалось найти сотрудника по логину, ошибка: ${employeeResponse}`)
@@ -46,8 +47,8 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
         p.offset = p.offset - 1
         p.offset = p.limit * p.offset
 
-        // список товаров
-        const productResponse = await this.repository.Product.FindProductList(ts, p, employeeResponse.stock_id)
+        // поиск списока товаров
+        const productResponse = await this.repository.Product.FindProductListByStockID(ts, p, employeeResponse.stock_id)
         if (productResponse instanceof Error) {
             if (productResponse === GlobalErrorsMap.ErrNoData) {
                 return GlobalResponseErrors.ErrNoData
@@ -55,27 +56,17 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
             this.log.Error(`не удалось загрузить список продуктов, ошибка: ${productResponse}`)
             return GlobalResponseErrors.ErrInternalError
         }
-        
-        // количество страниц с продуктами
-        const pageCountResponse = await this.repository.Product.FindProductCount(ts, employeeResponse.stock_id)
-        if (pageCountResponse instanceof Error) {
-            this.log.Error(`не удалось загрузить общее количество товара, ошибка: ${productResponse}`)
-            return GlobalResponseErrors.ErrInternalError
-        } 
 
-        // если сотрудник прикреплен к складу
-        if (employeeResponse.stock_id) {
-            // вернуть результат как есть
-            return {
-                product_list: productResponse,
-                page_count: Math.ceil(pageCountResponse / p.limit)
-            }
+        // количество страниц с продуктами
+        const pageCountResponse = await this.repository.Product.FindProductCount(ts, p, employeeResponse.stock_id)
+        if (pageCountResponse instanceof Error) {
+            this.log.Error(`не удалось загрузить общее количество товара, ошибка: ${pageCountResponse}`)
+            return GlobalResponseErrors.ErrInternalError
         }
-        
-        // если сотрудник не привязан к складу, удалить дубликаты из массива
+
         return {
-            product_list: removeArrayObjectDublicateByKey('product_id', productResponse),
-            page_count: Math.ceil(pageCountResponse / p.limit)
+            product_list: productResponse,
+            page_count: Math.ceil(pageCountResponse.count / p.limit)
         }
     }
 }
