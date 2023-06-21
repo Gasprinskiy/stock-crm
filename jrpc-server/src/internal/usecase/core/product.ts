@@ -1,4 +1,4 @@
-import { GlobalErrorsMap, GlobalResponseErrors } from '../../entity/global/error/index.js';
+import { InternalErrorsMap, GlobalResponseErrors } from '../../entity/global/error/index.js';
 import pgPromise from "pg-promise";
 import { Repository } from "../../repository/index.js";
 import { Logger } from "../../../tools/logger/index.js"
@@ -40,7 +40,7 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
         const employeeResponse = await this.repository.Employee.GetEmployeeByLogin(ts, p.employee_login)
         if (employeeResponse instanceof Error) {
             this.log.Error(`не удалось найти сотрудника по логину, ошибка: ${employeeResponse}`)
-            return GlobalResponseErrors.ErrInternalError
+            return InternalErrorsMap.ErrInternalError
         } 
         
         // выставить корренктный параметр offset перед загрузкой списка товаров
@@ -50,18 +50,18 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
         // поиск списока товаров
         const productResponse = await this.repository.Product.FindProductListByStockID(ts, p, employeeResponse.stock_id)
         if (productResponse instanceof Error) {
-            if (productResponse === GlobalErrorsMap.ErrNoData) {
-                return GlobalResponseErrors.ErrNoData
+            if (productResponse === InternalErrorsMap.ErrNoData) {
+                return productResponse
             }
             this.log.Error(`не удалось загрузить список продуктов, ошибка: ${productResponse}`)
-            return GlobalResponseErrors.ErrInternalError
+            return InternalErrorsMap.ErrInternalError
         }
 
         // количество страниц с продуктами
         const pageCountResponse = await this.repository.Product.FindProductCount(ts, p, employeeResponse.stock_id)
         if (pageCountResponse instanceof Error) {
             this.log.Error(`не удалось загрузить общее количество товара, ошибка: ${pageCountResponse}`)
-            return GlobalResponseErrors.ErrInternalError
+            return InternalErrorsMap.ErrInternalError
         }
 
         return {

@@ -1,6 +1,3 @@
 export const EmployeeErrorsMap = {
-    ErrPassOrLoginIncorrect: {
-        message: "логин или пароль не верны",
-        name: "ErrPasswordIncorrect"
-    },
+    ErrPassOrLoginIncorrect: new Error("ErrPasswordIncorrect"),
 }

@@ -1,6 +1,6 @@
 export const InternalErrorsMap = {
-    ErrNoData: new Error("данные не найдены"),
-    ErrInternalError: new Error("произошла внутреняя ошибка")
+    ErrNoData: new Error("ErrNoData"),
+    ErrInternalError: new Error("ErrInternalError")
 }
 
 export const GlobalResponseErrors = {

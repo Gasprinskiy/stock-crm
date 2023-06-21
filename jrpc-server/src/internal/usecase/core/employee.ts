@@ -2,7 +2,7 @@ import pgPromise from "pg-promise";
 import { Repository } from "../../repository/index.js";
 import { AuthParams } from "../../entity/employee/params/index.js"; 
 import { Employee, EmployeeAuthResult } from "../../entity/employee/entity/index.js";
-import { GlobalErrorsMap } from "../../entity/global/error/index.js";
+import { InternalErrorsMap } from "../../entity/global/error/index.js";
 import { EmployeeErrorsMap } from "../../entity/employee/error/index.js";
 import { Logger } from '../../../tools/logger/index.js';
 import { createHashPassword, checkHashPassword } from "../../../tools/passhash/index.js";
@@ -39,11 +39,11 @@ export class EmployeeUsecase implements EmployeeUsecaseInter {
         // поиск по логину
         const response = await this.repository.Employee.GetEmployeeByLogin(ts, p.login)
         if (response instanceof Error) {
-            if (response == GlobalErrorsMap.ErrNoData) {
-                return EmployeeErrorsMap.ErrPassOrLoginIncorrect
+            if (response == InternalErrorsMap.ErrNoData) {
+                return response
             }
             this.log.Error(`не удалось найти сотрудника по логину, ошибка: ${response.message}`)
-            return GlobalErrorsMap.ErrInternalError
+            return InternalErrorsMap.ErrInternalError
         }
 
         // проверка захешированного пароля
