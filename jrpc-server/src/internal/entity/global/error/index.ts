@@ -1,4 +1,4 @@
-export const GlobalErrorsMap = {
+export const InternalErrorsMap = {
     ErrNoData: new Error("данные не найдены"),
     ErrInternalError: new Error("произошла внутреняя ошибка")
 }

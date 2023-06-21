@@ -1,8 +1,10 @@
 import express from "express";
+import cors from "cors"
 import bodyParser from "body-parser";
 import { JSONRPCServer, JSONRPCErrorCode } from "json-rpc-2.0";
 import { Logger } from "../../../tools/logger/index.js";
-import JrpcErrorsMap  from "../../../internal/entity/jsrpc/errors/index.js";
+import JrpcErrorsMap from "../../../internal/entity/jsrpc/errors/index.js";
+import { getDurationInMilliseconds } from "../../../tools/datefunctions/index.js";
 
 export class Server  {
     private app: express.Express;
@@ -21,34 +23,48 @@ export class Server  {
 
     // запуск JSONRPC сервера для приема именованных методов
     public Run(): JSONRPCServer<void> {
-        this.serverLog.Info("Запуск JRPC сервера...")
+        this.serverLog.Info("JRPC server launch...")
 
         this.app.use(bodyParser.json());
+        this.app.use(cors())
         this.app.post("", (req, res) => {
-            const jsonRPCRequest = req.body;
 
+            // this.logRequests(req, res)
+            const jsonRPCRequest = req.body;
             this.jrpcServer.receive(jsonRPCRequest)
             .then((response) => {
                 if (response) {
                     if (response.error) {
                         if (response.error.code === JSONRPCErrorCode.MethodNotFound) {
-                            this.log.Error(`метод ${req.body.method} не найден`)
+                            this.log.Error(`method ${req.body.method} not found`)
                             response.error = JrpcErrorsMap.MethodNotFound
+                            res.sendStatus(404)
                         } else {
-                            this.log.Error(`ошибка при вызове метода ${req.body.method}: ${response.error.message}`)
+                            this.log.Error(`error while call method ${req.body.method}: ${response.error.message}`)
                             response.error = JrpcErrorsMap.InternalError
+                            res.sendStatus(500)
                         }
-                    }       
-                    res.json(response);
+                    }
+                    // if (res instanceof Error) {
+                    //     console.log(res.name);
+                    // }
                 } else {
-                    this.log.Warn(`нет ответа от метода ${req.body.method}`)
+                    this.log.Warn(`no response from method ${req.body.method}`)
                     res.sendStatus(204);
                 }
             });
         });
         
-        this.app.listen(this.port, () => this.serverLog.Info(`JRPC cервер запущен на порту ${this.port}`));
+        this.app.listen(this.port, () => this.serverLog.Info(`JRPC server running at port: ${this.port}`));
 
         return this.jrpcServer 
+    }
+
+    private logRequests(req: any, res: any): void {
+        const start = process.hrtime()
+
+        res.on("finish", () => {
+            this.log.Info(`jrpc method call;\nmethod name: ${req.body.method}\nparams: ${JSON.stringify(req.body.params)}\nresponse time: ${getDurationInMilliseconds(start)}ms`);
+        })
     }
 }

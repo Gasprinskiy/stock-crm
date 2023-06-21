@@ -9,3 +9,9 @@ export interface DefaultJRPCHandler {
     readonly methods: JsrpcMethod[]; 
     Init(): void;
 }
+
+export interface MethodLog {
+    name: any;
+    params: any;
+    response_time: number;
+}

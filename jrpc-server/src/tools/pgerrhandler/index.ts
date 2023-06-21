@@ -1,5 +1,5 @@
 import pgPromise from "pg-promise";
-import { GlobalErrorsMap }  from "../../internal/entity/global/error/index.js";
+import { InternalErrorsMap }  from "../../internal/entity/global/error/index.js";
 
 // обработчик ошибок postgress репо методов
 export const handleRequestError = async <T>(callback: Function) :  Promise<T | Error> => {
@@ -9,7 +9,7 @@ export const handleRequestError = async <T>(callback: Function) :  Promise<T | E
     })
     .catch((err: pgPromise.errors.QueryResultError) => {
         if (err.code == pgPromise.errors.queryResultErrorCode.noData) {
-            return GlobalErrorsMap.ErrNoData
+            return InternalErrorsMap.ErrNoData
         }
         return err
     })

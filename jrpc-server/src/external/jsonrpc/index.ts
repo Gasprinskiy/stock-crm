@@ -13,7 +13,7 @@ export class JRPCHandler {
     
     constructor(params: { 
         jrpc: JSONRPCServer<void>; 
-        db: pgPromise.IDatabase<{}>; 
+        db: pgPromise.IDatabase<object>; 
         ui: Usecase; 
     }){
         this.handlers = [

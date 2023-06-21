@@ -6,12 +6,12 @@ import { JSONRPCServer } from "json-rpc-2.0";
 
 export class ProductHandler implements DefaultJRPCHandler {
     private jsrpcServer: JSONRPCServer<void>;
-    private db: pgPromise.IDatabase<{}>;
+    private db: pgPromise.IDatabase<object>;
     private usecase: Usecase;
     readonly methods: JsrpcMethod[];
     constructor(
         jrpc: JSONRPCServer<void>, 
-        db: pgPromise.IDatabase<{}>,
+        db: pgPromise.IDatabase<object>,
         ui: Usecase, 
     ){
         this.jsrpcServer = jrpc;

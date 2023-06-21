@@ -8,14 +8,14 @@ import { AuthParams } from "./../../../internal/entity/employee/params/index.js"
 
 export class EmployeeHandler implements DefaultJRPCHandler {
     private jsrpcServer: JSONRPCServer<void>;
-    private db: pgPromise.IDatabase<{}>;
+    private db: pgPromise.IDatabase<object>;
     private usecase: Usecase;
     //
     readonly methods: JsrpcMethod[];
     
     constructor(
         jrpc: JSONRPCServer<void>, 
-        db: pgPromise.IDatabase<{}>,
+        db: pgPromise.IDatabase<object>,
         ui: Usecase, 
     ){
         this.jsrpcServer = jrpc;

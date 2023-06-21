@@ -2,7 +2,7 @@ import pgPromise from "pg-promise";
 import { Logger } from "../../../tools/logger/index.js";
 
 export class PostgresDBase {
-    private pgpApp: pgPromise.IMain<{}>;
+    private pgpApp: pgPromise.IMain<object>;
     private connectionString: string;
     private log: Logger;
 
@@ -13,17 +13,17 @@ export class PostgresDBase {
     }
 
     // ConnectToDb Подключение к базе postgress возвращение экземпляпа DB
-    public async Connect(): Promise<pgPromise.IDatabase<{}>> {
-        this.log.Info("Подключение к postgres...");
+    public async Connect(): Promise<pgPromise.IDatabase<object>> {
+        this.log.Info("Connecting to postgres...");
     
         const db = this.pgpApp(this.connectionString)
         
         await db.connect()
         .then(() => {
-            this.log.Info("Подключение к postgres прошло успешно");
+            this.log.Info("Connection to postgres was successful");
         })
         .catch((err: Error) => {
-            this.log.Error(`Ошибка при подключении к postgres: ${err.message}`,)
+            this.log.Error(`Error while connecting to postgres: ${err.message}`,)
             process.exit(1)
         })
 

@@ -1,15 +1,12 @@
 import fs from "fs"
 import { pino } from "pino";
+import { pinoHttp, HttpLogger } from "pino-http"; 
 import { timezone_date_string } from "../datefunctions/index.js";
 
 
 const { env } = process
 
 interface LoggerInter {
-    readonly Path: string; // путь к файлу логов
-    readonly Prefix: string; // prefix модуля записывающия логи
-    CustomLog: pino.Logger; // pino для более информативного вывода логов в терминал
-
     Info(message: string): void;
     Debug(message: string): void;
     Warn(message: string): void;
@@ -33,38 +30,41 @@ const logTypeMap : logTypeMap  = {
 }
 
 export class Logger implements LoggerInter {
-    Path: string;
-    Prefix: string;
-    CustomLog: pino.Logger<pino.LoggerOptions>;
+    private Path: string;
+    private Prefix: string;
+    private CustomLog: pino.Logger<pino.LoggerOptions>;
+    private HttpLogger: HttpLogger;
     private noFileLog: boolean;
-    constructor(prefix: string, noFileLog: boolean = false) {  
+
+    constructor(prefix: string, noFileLog = false) {  
         this.Path = env.LOG_PATH!;
         // this.Path = "./log.txt"
         this.Prefix = prefix;
         this.CustomLog = pino();
+        this.HttpLogger = pinoHttp()
 
         this.noFileLog = noFileLog;
     }
 
-    Info(message: string): void {
+    public Info(message: string): void {
         const log = this.logWithPrefix(message)
         this.CustomLog.info(log)
         this.writeToFileLog(logTypeMap[logType.info], log)
     }
 
-    Debug(message: string): void {
+    public Debug(message: string): void {
         const log = this.logWithPrefix(message)
         this.CustomLog.debug(log)
         this.writeToFileLog(logTypeMap[logType.debug], log)
     }
 
-    Warn(message: string): void {
+    public Warn(message: string): void {
         const log = this.logWithPrefix(message)
         this.CustomLog.warn(log)
         this.writeToFileLog(logTypeMap[logType.warn], log)
     }
 
-    Error(message: string): void {
+    public Error(message: string): void {
         const log = this.logWithPrefix(message)
         this.CustomLog.error(log)
         this.writeToFileLog(logTypeMap[logType.error], log)

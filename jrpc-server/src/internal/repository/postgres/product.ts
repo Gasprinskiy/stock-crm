@@ -5,15 +5,15 @@ import { handleRequestError } from "../../../tools/pgerrhandler/index.js";
 import { CountResponse } from "../../entity/global/entity/index.js";
 
 export interface ProductRepoInter {
-    GetProductByID(ts: pgPromise.ITask<{}>, id: number): Promise<Product|Error>;
-    CreateProduct(ts: pgPromise.ITask<{}>, p: CreateProductParam): Promise<Product|Error>;
-    FindProductListByStockID(ts: pgPromise.ITask<{}>, p: FindProductListParam, stockID: number): Promise<Product[]|Error>;
-    FindProductCount(ts: pgPromise.ITask<{}>,  p: FindProductListParam, stockID: number): Promise<CountResponse|Error>;
-    // LoadPriceRange(ts: pgPromise.ITask<{}>): Promise<ProductPriceRange|Error>
+    GetProductByID(ts: pgPromise.ITask<object>, id: number): Promise<Product|Error>;
+    CreateProduct(ts: pgPromise.ITask<object>, p: CreateProductParam): Promise<Product|Error>;
+    FindProductListByStockID(ts: pgPromise.ITask<object>, p: FindProductListParam, stockID: number): Promise<Product[]|Error>;
+    FindProductCount(ts: pgPromise.ITask<object>,  p: FindProductListParam, stockID: number): Promise<CountResponse|Error>;
+    // LoadPriceRange(ts: pgPromise.ITask<object>): Promise<ProductPriceRange|Error>
 }
 
 export class ProductRepository implements ProductRepoInter {
-    public async GetProductByID(ts: pgPromise.ITask<{}>, id: number): Promise<Product|Error> {
+    public async GetProductByID(ts: pgPromise.ITask<object>, id: number): Promise<Product|Error> {
         const sqlQuery = `
         SELECT pr.product_id, pr.product_name, pr.description, pr.tags, pr.creation_date
         FROM product pr
@@ -25,7 +25,7 @@ export class ProductRepository implements ProductRepoInter {
         })
     }
 
-    public async CreateProduct(ts: pgPromise.ITask<{}>, p: CreateProductParam): Promise<Product|Error> {
+    public async CreateProduct(ts: pgPromise.ITask<object>, p: CreateProductParam): Promise<Product|Error> {
         const sqlQuery = `
         INSERT INTO product(product_name, description, tags)
         VALUES ('${p.product_name}', '${p.description}', '${p.tags}')
@@ -34,7 +34,7 @@ export class ProductRepository implements ProductRepoInter {
         return ts.one(sqlQuery)
     }
 
-    public async FindProductListByStockID(ts: pgPromise.ITask<{}>, p: FindProductListParam, stockID: number): Promise<Product[]|Error> {
+    public async FindProductListByStockID(ts: pgPromise.ITask<object>, p: FindProductListParam, stockID: number): Promise<Product[]|Error> {
         const sqlQuery = `
         SELECT 
             p.product_id, 
@@ -52,7 +52,7 @@ export class ProductRepository implements ProductRepoInter {
         })
     }
 
-    public async FindProductCount(ts: pgPromise.ITask<{}>, p: FindProductListParam, stockID: number): Promise<CountResponse|Error> {
+    public async FindProductCount(ts: pgPromise.ITask<object>, p: FindProductListParam, stockID: number): Promise<CountResponse|Error> {
         const sqlQuery = `
         SELECT count(DISTINCT p.product_id)
         FROM product p
@@ -64,7 +64,7 @@ export class ProductRepository implements ProductRepoInter {
         })
     }
 
-    // public async LoadPriceRange(ts: pgPromise.ITask<{}>): Promise<ProductPriceRange|Error> {
+    // public async LoadPriceRange(ts: pgPromise.ITask<object>): Promise<ProductPriceRange|Error> {
     //     return {
     //         min_price: 0,
     //         max_price: 10000.0

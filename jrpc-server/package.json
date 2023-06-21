@@ -33,10 +33,12 @@
   },
   "dependencies": {
     "@types/bcrypt": "^5.0.0",
+    "@types/cors": "^2.8.13",
     "@types/express": "^4.17.17",
     "axios": "^1.3.4",
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
     "express": "^4.18.2",
     "js-yaml": "^4.1.0",
     "json-rpc-2.0": "^1.5.1",
@@ -49,17 +51,5 @@
     "pino-tee": "^0.3.0",
     "read-yaml-file": "^2.1.0",
     "yaml": "^2.2.1"
-  },
-  "imports": {
-    "#config": "./src/cmd/init/config/index.js",
-    "#db": "./src/cmd/init/db_connection/index.js",
-    "#server_run": "./src/cmd/init/server_run/index.js",
-    "#jrpc_handler": "./src/external/jsonrpc/index.js",
-    "#tools/*": "./src/tools/*/index.js",
-    "#entity/*": "./src/internal/entity/*/entity/index.js",
-    "#entity_params/*": "./src/internal/entity/*/params/index.js",
-    "#entity_error/*": "./src/internal/entity/*/error/index.js",
-    "#repository": "./src/internal/repository/index.js",
-    "#usecase": "./src/internal/usecase/index.js"
   }
 }
