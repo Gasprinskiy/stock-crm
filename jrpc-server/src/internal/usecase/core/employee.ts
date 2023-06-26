@@ -49,7 +49,7 @@ export class EmployeeUsecase implements EmployeeUsecaseInter {
         // проверка захешированного пароля
         const passwordCorrect = checkHashPassword(response.password, p.password)
         if (!passwordCorrect) {
-            return EmployeeErrorsMap.ErrPassOrLoginIncorrect
+            return EmployeeErrorsMap.ErrWrongLoginOrPassword
         }
 
         const result : EmployeeAuthResult = {

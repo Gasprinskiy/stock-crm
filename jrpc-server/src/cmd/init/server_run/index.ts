@@ -3,7 +3,7 @@ import cors from "cors"
 import bodyParser from "body-parser";
 import { JSONRPCServer, JSONRPCErrorCode } from "json-rpc-2.0";
 import { Logger } from "../../../tools/logger/index.js";
-import JrpcErrorsMap from "../../../internal/entity/jsrpc/errors/index.js";
+import { JrpcErrorsMap, JrpcErrorsList, JrpcError} from "../../../internal/entity/jsrpc/errors/index.js";
 import { getDurationInMilliseconds } from "../../../tools/datefunctions/index.js";
 
 export class Server  {
@@ -29,7 +29,7 @@ export class Server  {
         this.app.use(cors())
         this.app.post("", (req, res) => {
 
-            // this.logRequests(req, res)
+            this.logRequests(req, res)
             const jsonRPCRequest = req.body;
             this.jrpcServer.receive(jsonRPCRequest)
             .then((response) => {
@@ -38,16 +38,21 @@ export class Server  {
                         if (response.error.code === JSONRPCErrorCode.MethodNotFound) {
                             this.log.Error(`method ${req.body.method} not found`)
                             response.error = JrpcErrorsMap.MethodNotFound
-                            res.sendStatus(404)
+                            res.sendStatus(JrpcErrorsMap.MethodNotFound.code)
                         } else {
                             this.log.Error(`error while call method ${req.body.method}: ${response.error.message}`)
                             response.error = JrpcErrorsMap.InternalError
-                            res.sendStatus(500)
+                            res.sendStatus(JrpcErrorsMap.InternalError.code)
                         }
+                    }              
+                    if (response.result instanceof Error) {
+                       const error = this.findErrorByName(response.result?.message)
+                       response.error = error ? error : JrpcErrorsMap.InternalError
+                       res.sendStatus(response.error?.code)
+                       return
                     }
-                    // if (res instanceof Error) {
-                    //     console.log(res.name);
-                    // }
+                    
+                    res.json(response)
                 } else {
                     this.log.Warn(`no response from method ${req.body.method}`)
                     res.sendStatus(204);
@@ -66,5 +71,9 @@ export class Server  {
         res.on("finish", () => {
             this.log.Info(`jrpc method call;\nmethod name: ${req.body.method}\nparams: ${JSON.stringify(req.body.params)}\nresponse time: ${getDurationInMilliseconds(start)}ms`);
         })
+    }
+
+    private findErrorByName(name: string): JrpcError | undefined {
+        return JrpcErrorsList.find(item => item.name === name)
     }
 }
