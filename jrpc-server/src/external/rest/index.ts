@@ -1,24 +1,26 @@
-import { JSONRPCServer } from "json-rpc-2.0";
+import express from 'express';
 import pgPromise from "pg-promise";
-import { ProductHandler } from './core/product.js'
+// import { ProductHandler } from './core/product.js'
 import { EmployeeHandler } from "./core/employee.js";
 import { Usecase } from "../../internal/usecase/index.js";
+import { ApiMiddleware } from "./core/middleware/index.js";
 
 
-export class JRPCHandler {
+export class ApiHandler {
     private handlers: [
-        Product: ProductHandler,
+        // Product: ProductHandler,
         Employee: EmployeeHandler
     ]
     
     constructor(params: { 
-        jrpc: JSONRPCServer<void>; 
+        app: express.Express; 
         db: pgPromise.IDatabase<object>; 
         ui: Usecase; 
+        middleware: ApiMiddleware;
     }){
         this.handlers = [
-            new ProductHandler(params.jrpc, params.db, params.ui),
-            new EmployeeHandler(params.jrpc, params.db, params.ui)
+            // new ProductHandler(params.app, params.db, params.ui, params.middleware),
+            new EmployeeHandler(params.app, params.db, params.ui, params.middleware)
         ]
     }
 

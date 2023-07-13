@@ -7,3 +7,4 @@ postgres:
   pass: test_db
 server:
   port: 3000
+  token_key: SAY_HELLO_TO_MY_LITTLE_FRIEND

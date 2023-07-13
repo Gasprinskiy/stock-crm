@@ -1,14 +1,14 @@
 import pgPromise from "pg-promise";
 import { Employee, EmployeeAuthResult } from '../../entity/employee/entity/index.js';
-import { handleRequestError } from "../../../tools/pgerrhandler/index.js";
+import { selectOne } from "../../../tools/pg-err-handler/index.js";
 
 export interface EmployeeRepoInter {
-    CreateEmployee(ts: pgPromise.ITask<object>, p: Employee): Promise<EmployeeAuthResult | Error>;
+    CreateEmployee(ts: pgPromise.ITask<object>, p: Employee): Promise<EmployeeAuthResult>;
     GetEmployeeByLogin(ts: pgPromise.ITask<object>, login: string) : Promise<Employee | Error>;
 }
 
 export class EmployeeRepo implements EmployeeRepoInter {
-    public async CreateEmployee(ts: pgPromise.ITask<object>, p: Employee): Promise<EmployeeAuthResult | Error> {
+    public async CreateEmployee(ts: pgPromise.ITask<object>, p: Employee): Promise<EmployeeAuthResult> {
         const sqlQuery = `
         INSERT INTO employees(ar_id, stock_id, fio, login, password)
         VALUES (${p.ar_id}, ${p.stock_id}, '${p.fio}', '${p.login}', '${p.password}')
@@ -22,8 +22,6 @@ export class EmployeeRepo implements EmployeeRepoInter {
         FROM employees e
         WHERE e.login = $1`
 
-        return handleRequestError(() => {
-            return ts.one(sqlQuery, login)
-        })
+        return selectOne(ts, sqlQuery, login)
     }
 }

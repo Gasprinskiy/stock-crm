@@ -1,6 +1,5 @@
 import fs from "fs"
 import { pino } from "pino";
-import { pinoHttp, HttpLogger } from "pino-http"; 
 import { timezone_date_string } from "../datefunctions/index.js";
 
 
@@ -33,7 +32,6 @@ export class Logger implements LoggerInter {
     private Path: string;
     private Prefix: string;
     private CustomLog: pino.Logger<pino.LoggerOptions>;
-    private HttpLogger: HttpLogger;
     private noFileLog: boolean;
 
     constructor(prefix: string, noFileLog = false) {  
@@ -41,7 +39,6 @@ export class Logger implements LoggerInter {
         // this.Path = "./log.txt"
         this.Prefix = prefix;
         this.CustomLog = pino();
-        this.HttpLogger = pinoHttp()
 
         this.noFileLog = noFileLog;
     }

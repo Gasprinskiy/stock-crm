@@ -1,7 +1,7 @@
 import pgPromise from "pg-promise";
 import { Product } from "../../entity/product/entity/index.js";
 import { CreateProductParam, FindProductListParam, ProductPriceRange } from "../../entity/product/params/index.js"
-import { handleRequestError } from "../../../tools/pgerrhandler/index.js";
+import { selectOne, selectMany } from "../../../tools/pg-err-handler/index.js";
 import { CountResponse } from "../../entity/global/entity/index.js";
 
 export interface ProductRepoInter {
@@ -20,9 +20,7 @@ export class ProductRepository implements ProductRepoInter {
         WHERE pr.product_id = $1
         AND pr.deleted = false`
         
-        return handleRequestError(() => {
-            return ts.one(sqlQuery, id)
-        })
+        return selectOne(ts, sqlQuery, id)
     }
 
     public async CreateProduct(ts: pgPromise.ITask<object>, p: CreateProductParam): Promise<Product|Error> {
@@ -47,9 +45,7 @@ export class ProductRepository implements ProductRepoInter {
         ${this.findProductListFilterQuery(p, stockID)}
         ${this.findProductListGroupQuery(p)}`
 
-        return handleRequestError(() => {
-            return ts.many(sqlQuery)
-        })
+        return selectMany(ts, sqlQuery)
     }
 
     public async FindProductCount(ts: pgPromise.ITask<object>, p: FindProductListParam, stockID: number): Promise<CountResponse|Error> {
@@ -59,9 +55,7 @@ export class ProductRepository implements ProductRepoInter {
             JOIN product$stocks ps ON(ps.product_id = p.product_id)
         ${this.findProductListFilterQuery(p, stockID)}`
 
-        return handleRequestError(() => {
-            return ts.one(sqlQuery, stockID)
-        })
+        return selectOne(ts, sqlQuery, stockID)
     }
 
     // public async LoadPriceRange(ts: pgPromise.ITask<object>): Promise<ProductPriceRange|Error> {

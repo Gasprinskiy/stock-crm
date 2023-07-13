@@ -12,5 +12,6 @@ export interface EmployeeAuthResult {
     ar_id: AccesRight;
     stock_id: number;
     fio: string;
+    login: string;
 }
 

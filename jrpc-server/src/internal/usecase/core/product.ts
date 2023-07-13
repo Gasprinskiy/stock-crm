@@ -1,16 +1,15 @@
-import { InternalErrorsMap, GlobalResponseErrors } from '../../entity/global/error/index.js';
+import { InternalErrorsMap } from '../../entity/global/error/index.js';
 import pgPromise from "pg-promise";
 import { Repository } from "../../repository/index.js";
 import { Logger } from "../../../tools/logger/index.js"
 import { Product, ProductListResponse } from '../../entity/product/entity/index.js';
 import { CreateProductParam, FindProductListParam } from "../../entity/product/params/index.js"
-import { handleRepoDefaultError } from "../../../tools/usecaseerrhandler/index.js";
-import { removeArrayDublicateByKey } from '../../../tools/unique/index.js';
+import { handleRepoDefaultError } from "../../../tools/usecase-err-handler/index.js";
 
 interface ProdcuctUsecaseInter {
-    GetProductByID(ts: pgPromise.ITask<{}>, id: number): Promise<Product|Error>;
-    CreateProduct(ts: pgPromise.ITask<{}>, p: CreateProductParam): Promise<Product|Error>;
-    FindProductList(ts: pgPromise.ITask<{}>, p: FindProductListParam): Promise<ProductListResponse|Error>;
+    GetProductByID(ts: pgPromise.ITask<object>, id: number): Promise<Product|Error>;
+    CreateProduct(ts: pgPromise.ITask<object>, p: CreateProductParam): Promise<Product|Error>;
+    FindProductList(ts: pgPromise.ITask<object>, p: FindProductListParam): Promise<ProductListResponse|Error>;
 }
 
 export class ProductUsecase implements ProdcuctUsecaseInter {
@@ -22,20 +21,20 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
         this.log = new Logger("product")
     }
 
-    public async GetProductByID(ts: pgPromise.ITask<{}>, id: number): Promise<Product | Error> {
+    public async GetProductByID(ts: pgPromise.ITask<object>, id: number): Promise<Product | Error> {
         return handleRepoDefaultError(() => {
             return this.repository.Product.GetProductByID(ts, id)
         }, this.log, "не удалось получить продукт по ID")
     }
 
-    public async CreateProduct(ts: pgPromise.ITask<{}>, p: CreateProductParam): Promise<Product | Error> {
+    public async CreateProduct(ts: pgPromise.ITask<object>, p: CreateProductParam): Promise<Product | Error> {
         return handleRepoDefaultError(() => {
             return this.repository.Product.CreateProduct(ts, p)
         }, this.log, "не удалось создать продукт")
     }
     
     // FindProductList поиск товаров
-    public async FindProductList(ts: pgPromise.ITask<{}>, p: FindProductListParam): Promise<ProductListResponse | Error> {
+    public async FindProductList(ts: pgPromise.ITask<object>, p: FindProductListParam): Promise<ProductListResponse | Error> {
         // получить работника по логину что бы далее загружать продукты по складу к которому он прикреплен
         const employeeResponse = await this.repository.Employee.GetEmployeeByLogin(ts, p.employee_login)
         if (employeeResponse instanceof Error) {

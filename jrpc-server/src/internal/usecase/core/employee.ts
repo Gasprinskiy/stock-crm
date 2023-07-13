@@ -6,13 +6,13 @@ import { InternalErrorsMap } from "../../entity/global/error/index.js";
 import { EmployeeErrorsMap } from "../../entity/employee/error/index.js";
 import { Logger } from '../../../tools/logger/index.js';
 import { createHashPassword, checkHashPassword } from "../../../tools/passhash/index.js";
-import { handleRepoDefaultError } from "../../../tools/usecaseerrhandler/index.js";
+import { handleRepoDefaultError } from "../../../tools/usecase-err-handler/index.js";
 import { translitLowercaseRuToEn } from "../../../tools/translit/index.js"
 
 
 interface EmployeeUsecaseInter {
-    CreateEmployee(ts: pgPromise.ITask<{}>, p: Employee): Promise<EmployeeAuthResult | Error>;
-    Auth(ts: pgPromise.ITask<{}>, p: AuthParams): Promise<EmployeeAuthResult | Error>;
+    CreateEmployee(ts: pgPromise.ITask<object>, p: Employee): Promise<EmployeeAuthResult | Error>;
+    Auth(ts: pgPromise.ITask<object>, p: AuthParams): Promise<EmployeeAuthResult | Error>;
 }
 
 export class EmployeeUsecase implements EmployeeUsecaseInter {
@@ -25,37 +25,38 @@ export class EmployeeUsecase implements EmployeeUsecaseInter {
     }
 
     // CreateEmployee создать работника
-    public async CreateEmployee(ts: pgPromise.ITask<{}>, p: Employee): Promise<EmployeeAuthResult | Error> {
+    public async CreateEmployee(ts: pgPromise.ITask<object>, p: Employee): Promise<EmployeeAuthResult> {
         p.password = createHashPassword(p.password)
         p.login = this.createLogin(p.fio)
 
-        return handleRepoDefaultError(()=>{
+        return handleRepoDefaultError(() => {
             return this.repository.Employee.CreateEmployee(ts, p)
         }, this.log, "не удалось создать нового сотрудника")
     }
 
     // Auth авторизация
-    public async Auth(ts: pgPromise.ITask<{}>, p: AuthParams): Promise<EmployeeAuthResult | Error> {
+    public async Auth(ts: pgPromise.ITask<object>, p: AuthParams): Promise<EmployeeAuthResult> {        
         // поиск по логину
         const response = await this.repository.Employee.GetEmployeeByLogin(ts, p.login)
         if (response instanceof Error) {
-            if (response == InternalErrorsMap.ErrNoData) {
-                return response
+            if (response === InternalErrorsMap.ErrNoData) {
+                throw EmployeeErrorsMap.ErrWrongLoginOrPassword
             }
             this.log.Error(`не удалось найти сотрудника по логину, ошибка: ${response.message}`)
-            return InternalErrorsMap.ErrInternalError
+            throw InternalErrorsMap.ErrInternalError
         }
-
+        
         // проверка захешированного пароля
         const passwordCorrect = checkHashPassword(response.password, p.password)
         if (!passwordCorrect) {
-            return EmployeeErrorsMap.ErrWrongLoginOrPassword
+            throw EmployeeErrorsMap.ErrWrongLoginOrPassword
         }
 
         const result : EmployeeAuthResult = {
             ar_id: response.ar_id,
             stock_id: response.stock_id,
             fio: response.fio,
+            login: p.login
         }
 
         return result

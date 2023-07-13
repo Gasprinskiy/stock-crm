@@ -3,20 +3,17 @@ import fs from "fs"
 import path from "path";
 import { fileURLToPath } from 'url';
 
-
+interface PgConfig { host: string; port: number; db: string; user: string; pass: string; }
+interface ServerConfig { port: number; token_key: string; }
 export class Config {
-    private postgres: { host: string; port: number; db: string; user: string; pass: string; };
-    private server: { port: number; };
+    private postgres: PgConfig;
+    private server: ServerConfig;
 
-    constructor(confPath: string) {
-        const __filename = fileURLToPath(import.meta.url);
-        const __dirname = path.dirname(__filename);
-        const filepath = path.join(__dirname, confPath)    
-        const file = fs.readFileSync(filepath, "utf8")
-        const params = YAML.parse(file)
+    constructor() {
+        const config = this.initConfig()
 
-        this.postgres = params.postgres
-        this.server = params.server
+        this.postgres = config.pg
+        this.server = config.server   
     }
 
     public PgConnectionString(): string {
@@ -25,5 +22,22 @@ export class Config {
 
     public ServerPort(): number {
         return this.server.port
+    }
+
+    public TokenKey() : string {        
+        return this.server.token_key
+    }
+
+    private initConfig() : {pg: PgConfig, server: ServerConfig} {
+        const { env } = process
+        if (!env.CONF_PATH) {
+            process.exit(1)
+        }
+        
+        const __filename = fileURLToPath(import.meta.url);
+        const __dirname = path.dirname(__filename);
+        const filepath = path.join(__dirname, env.CONF_PATH)    
+        const file = fs.readFileSync(filepath, "utf8")
+        return YAML.parse(file)
     }
 }

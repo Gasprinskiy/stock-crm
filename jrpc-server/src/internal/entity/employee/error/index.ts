@@ -1,3 +1,3 @@
 export const EmployeeErrorsMap = {
-    ErrWrongLoginOrPassword: new Error("ErrWrongLoginOrPassword"),
+    ErrWrongLoginOrPassword: new Error('ErrWrongLoginOrPassword'),
 }
