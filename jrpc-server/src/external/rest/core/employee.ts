@@ -1,10 +1,7 @@
 import express from 'express';
-import { Employee } from '../../../internal/entity/employee/entity/index.js';
 import pgPromise from "pg-promise";
-import { JSONRPCParams, JSONRPCServer } from "json-rpc-2.0";
 import { ApiMethod, DefaultApiHandler } from '../../../internal/entity/rest/entity/index.js';
 import { Usecase } from "../../../internal/usecase/index.js";
-import { AuthParams } from "../../../internal/entity/employee/params/index.js";
 import {  Request, Response } from 'express';
 import { ApiMiddleware } from './middleware/index.js';
 import { logRequests, responseServerError, handleApiRequest } from '../../../tools/api-err-handler/index.js';
