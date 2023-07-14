@@ -12,7 +12,7 @@ export class Config {
     constructor() {
         const config = this.initConfig()
 
-        this.postgres = config.pg
+        this.postgres = config.postgres
         this.server = config.server   
     }
 
@@ -28,7 +28,7 @@ export class Config {
         return this.server.token_key
     }
 
-    private initConfig() : {pg: PgConfig, server: ServerConfig} {
+    private initConfig() : {postgres: PgConfig, server: ServerConfig} {
         const { env } = process
         if (!env.CONF_PATH) {
             process.exit(1)
