@@ -6,6 +6,7 @@ import {  Request, Response } from 'express';
 import { ApiMiddleware } from './middleware/index.js';
 import { logRequests, responseServerError, handleApiRequest } from '../../../tools/api-err-handler/index.js';
 import { Logger } from '../../../tools/logger/index.js';
+import { AccessRight } from '../../../internal/entity/employee/constant/index.js';
 
 
 export class EmployeeHandler implements DefaultApiHandler {
@@ -60,21 +61,22 @@ export class EmployeeHandler implements DefaultApiHandler {
     }
 
     private async createEmployee(req: Request, res: Response) {
-        handleApiRequest((ts) => {
-            return this.usecase.Employee.CreateEmployee(ts, req.body.params)
-        }, this.log, this.db, {req: req, res: res})
+        res.json({message:"HELLO MOTHERFUCKER"})
+        // handleApiRequest((ts) => {
+        //     return this.usecase.Employee.CreateEmployee(ts, req.body.params)
+        // }, this.log, this.db, {req: req, res: res})
     }
 
     public Init(){
         this.app.post(
             "/auth", 
-            this.auth
+            this.auth.bind(this)
         )
 
         this.app.post(
             "/create_employee",
-            this.middleware.IsAuthorized,
-            this.createEmployee
+            this.middleware.CheckAccessRight(AccessRight.full_access).bind(this.middleware),
+            this.createEmployee.bind(this)
         )
     }
 }
