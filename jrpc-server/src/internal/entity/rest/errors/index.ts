@@ -34,5 +34,11 @@ const ErrNotAuthorized: ApiError = {
     message: "пользователь не авторизован"
 }
 
-export const ApiErrorsMap = {MethodNotFound, InternalError, ErrNoData, ErrWrongLoginOrPassword, ErrNotAuthorized}
+const ErrNoAccesRight: ApiError = {
+    code: 403,
+    name: "ErrNoAccesRight",
+    message: "нет прав доступа"
+}
+
+export const ApiErrorsMap = {MethodNotFound, InternalError, ErrNoData, ErrWrongLoginOrPassword, ErrNotAuthorized, ErrNoAccesRight}
 export const ApiErrorsList : ApiError[] = Object.values(ApiErrorsMap)
