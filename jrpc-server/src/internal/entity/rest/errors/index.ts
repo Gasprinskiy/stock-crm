@@ -40,5 +40,19 @@ const ErrNoAccesRight: ApiError = {
     message: "нет прав доступа"
 }
 
-export const ApiErrorsMap = {MethodNotFound, InternalError, ErrNoData, ErrWrongLoginOrPassword, ErrNotAuthorized, ErrNoAccesRight}
+const EmployeeAlreadyExists: ApiError = {
+    code: 409,
+    name: "EmployeeAlreadyExists",
+    message: "работник с такими данными уже существует"
+}
+
+export const ApiErrorsMap = {
+    MethodNotFound, 
+    InternalError, 
+    ErrNoData, 
+    ErrWrongLoginOrPassword, 
+    ErrNotAuthorized, 
+    ErrNoAccesRight,
+    EmployeeAlreadyExists
+}
 export const ApiErrorsList : ApiError[] = Object.values(ApiErrorsMap)

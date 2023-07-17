@@ -61,10 +61,9 @@ export class EmployeeHandler implements DefaultApiHandler {
     }
 
     private async createEmployee(req: Request, res: Response) {
-        res.json({message:"HELLO MOTHERFUCKER"})
-        // handleApiRequest((ts) => {
-        //     return this.usecase.Employee.CreateEmployee(ts, req.body.params)
-        // }, this.log, this.db, {req: req, res: res})
+        handleApiRequest((ts) => {
+            return this.usecase.Employee.CreateEmployee(ts, req.body.params)
+        }, this.log, this.db, {req: req, res: res})
     }
 
     public Init(){
@@ -75,7 +74,7 @@ export class EmployeeHandler implements DefaultApiHandler {
 
         this.app.post(
             "/create_employee",
-            this.middleware.CheckAccessRight(AccessRight.full_access).bind(this.middleware),
+            this.middleware.CheckAccessRight(AccessRight.full_access, AccessRight.stock_manager).bind(this.middleware),
             this.createEmployee.bind(this)
         )
     }
