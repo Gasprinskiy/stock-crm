@@ -1,13 +1,10 @@
 import jwt from 'jsonwebtoken';
 import { NextFunction, Request, Response } from 'express';
 import { EmployeeAuthResult } from '../../../../internal/entity/employee/entity/index.js';
-import { ApiErrorsMap } from '../../../../internal/entity/rest/errors/index.js';
 import { AccessRight } from '../../../../internal/entity/employee/constant/index.js';
-import { decode } from 'punycode';
 import { Logger } from '../../../../tools/logger/index.js';
-import { DecodedToken } from '../../../../internal/entity/rest/entity/index.js';
 import { responseServerError } from '../../../../tools/api-err-handler/index.js';
-// import { JrpcErrorsMap } from '../../../../internal/entity/rest/errors/index.js';
+import { InternalErrorsMap } from '../../../../internal/entity/global/error/index.js';
 
 export class ApiMiddleware {
     private token_key: string;
@@ -30,27 +27,25 @@ export class ApiMiddleware {
             this.decodeToken(req)         
             return next()
         } catch(err: any) {
-            this.log.Error(err.message)
-            responseServerError(res, err)
+            responseServerError(res, err, this.log)
         }
     }
 
     public CheckAccessRight(...ableAccessRights: AccessRight[]) {
         return (req: Request, res: Response, next: NextFunction) => {
-            this.accessRight(req, res, next, ...ableAccessRights)
+            this.accessRightHandler(req, res, next, ...ableAccessRights)
         } 
     }
 
-    public accessRight(req: Request, res: Response, next: NextFunction, ...ableAccessRights: AccessRight[]) : void {  
+    public accessRightHandler(req: Request, res: Response, next: NextFunction, ...ableAccessRights: AccessRight[]) : void {  
         try {
             const decodedToked = this.decodeToken(req)
             if (!ableAccessRights.includes(decodedToked?.ar_id)) {
-                throw ApiErrorsMap.ErrNoAccesRight
+                throw InternalErrorsMap.ErrNoAccesRight
             }
             return next()
         } catch(err: any) {
-            this.log.Error(err.message)
-            responseServerError(res, err)
+            responseServerError(res, err, this.log)
         }
     }
 

@@ -13,14 +13,18 @@ export const handleApiRequest = async <T>(callback: (ts: pgPromise.ITask<object>
         })
         serverParams.res.json(response)
     } catch(err: any) {
-        responseServerError(serverParams.res, err)
+        responseServerError(serverParams.res, err, log)
     }
 }
 
-export const responseServerError = (res: Response, err: Error): void => {
+export const responseServerError = (res: Response, err: Error, log: Logger): void => {
     const apiError = ApiErrorsList.find(item => item.name === err.message)
-    res.statusCode = apiError ? apiError.code : ApiErrorsMap.InternalError.code
-    res.json({message: apiError ? apiError.message : ApiErrorsMap.InternalError.message})
+    const responseError = apiError ? apiError : ApiErrorsMap.InternalError
+
+    log.Error(responseError.message)
+
+    res.statusCode = responseError.code
+    res.json({message: responseError.message})
 }
 
 export const logRequests = (req: Request, res: Response, log: Logger): void => {
