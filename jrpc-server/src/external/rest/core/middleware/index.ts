@@ -3,7 +3,7 @@ import { NextFunction, Request, Response } from 'express';
 import { EmployeeAuthResult } from '../../../../internal/entity/employee/entity/index.js';
 import { AccessRight } from '../../../../internal/entity/employee/constant/index.js';
 import { Logger } from '../../../../tools/logger/index.js';
-import { responseServerError } from '../../../../tools/api-err-handler/index.js';
+import { responseServerError } from '../../../../tools/api-request-handler/index.js';
 import { InternalErrorsMap } from '../../../../internal/entity/global/error/index.js';
 
 export class ApiMiddleware {

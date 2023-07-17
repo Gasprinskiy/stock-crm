@@ -4,7 +4,7 @@ import { ApiMethod, DefaultApiHandler } from '../../../internal/entity/rest/enti
 import { Usecase } from "../../../internal/usecase/index.js";
 import {  Request, Response } from 'express';
 import { ApiMiddleware } from './middleware/index.js';
-import { logRequests, responseServerError, handleApiRequest } from '../../../tools/api-err-handler/index.js';
+import { logRequests, responseServerError, handleApiRequest } from '../../../tools/api-request-handler/index.js';
 import { Logger } from '../../../tools/logger/index.js';
 import { AccessRight } from '../../../internal/entity/employee/constant/index.js';
 
