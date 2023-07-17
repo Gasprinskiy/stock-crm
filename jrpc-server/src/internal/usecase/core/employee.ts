@@ -29,41 +29,48 @@ export class EmployeeUsecase implements EmployeeUsecaseInter {
         p.password = createHashPassword(p.password)
         p.login = this.createLogin(p.fio)
 
-        return handleRepoDefaultError(() => {
-            return this.repository.Employee.CreateEmployee(ts, p)
-        }, this.log, "не удалось создать нового сотрудника")
+        try {
+            await this.repository.Employee.GetEmployeeByLogin(ts, p.login)
+            throw EmployeeErrorsMap.EmployeeAlreadyExist
+        } catch(err: any) {
+            if (err === InternalErrorsMap.ErrNoData) {
+                return handleRepoDefaultError(() => {
+                    return this.repository.Employee.CreateEmployee(ts, p)
+                }, this.log, "не удалось создать нового сотрудника")
+            }
+            throw err
+        } 
     }
 
     // Auth авторизация
     public async Auth(ts: pgPromise.ITask<object>, p: AuthParams): Promise<EmployeeAuthResult> {        
         // поиск по логину
-        const response = await this.repository.Employee.GetEmployeeByLogin(ts, p.login)
-        if (response instanceof Error) {
-            if (response === InternalErrorsMap.ErrNoData) {
+        try {
+            const response = await this.repository.Employee.GetEmployeeByLogin(ts, p.login)
+
+            // проверка захешированного пароля
+            const passwordCorrect = checkHashPassword(response.password, p.password)
+            if (!passwordCorrect) {
                 throw EmployeeErrorsMap.ErrWrongLoginOrPassword
             }
-            this.log.Error(`не удалось найти сотрудника по логину, ошибка: ${response.message}`)
+
+            return {
+                ar_id: response.ar_id,
+                stock_id: response.stock_id,
+                fio: response.fio,
+                login: p.login
+            }
+        } catch(err: any) {
+            if(err === InternalErrorsMap.ErrNoData || err === EmployeeErrorsMap.ErrWrongLoginOrPassword) {
+                throw EmployeeErrorsMap.ErrWrongLoginOrPassword
+            }
+            this.log.Error(`не удалось найти сотрудника по логину, ошибка: ${err.message}`)
             throw InternalErrorsMap.ErrInternalError
         }
-        
-        // проверка захешированного пароля
-        const passwordCorrect = checkHashPassword(response.password, p.password)
-        if (!passwordCorrect) {
-            throw EmployeeErrorsMap.ErrWrongLoginOrPassword
-        }
-
-        const result : EmployeeAuthResult = {
-            ar_id: response.ar_id,
-            stock_id: response.stock_id,
-            fio: response.fio,
-            login: p.login
-        }
-
-        return result
     }
 
     private createLogin(fio: string): string {
-        const spliteFio = translitLowercaseRuToEn(fio).split(" ")
+        const spliteFio = translitLowercaseRuToEn(fio.toLocaleLowerCase()).split(" ")
         return `${spliteFio[0]}.${spliteFio[1]}`
     }
 }
