@@ -8,7 +8,7 @@ import pgPromise from "pg-promise";
 export const handleApiRequest = async <T>(callback: (ts: pgPromise.ITask<object>) => Promise<T>, log: Logger, db: pgPromise.IDatabase<object>, serverParams: {req: Request; res: Response;}) : Promise<void> => {
     logRequests(serverParams.req, serverParams.res, log)
     try {
-        const response = db.tx(ts => {
+        const response = await db.tx(ts => {
             return callback(ts)
         })
         serverParams.res.json(response)
