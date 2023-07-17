@@ -31,6 +31,6 @@ export const logRequests = (req: Request, res: Response, log: Logger): void => {
     const start = process.hrtime()
 
     res.on("finish", () => {
-        log.Info(`api method call;\nmethod: ${req.method}\npath: ${req.url}\nparams: ${JSON.stringify(req.body.params)}\nresponse time: ${getDurationInMilliseconds(start)}ms`);
+        log.Info(`api method call;\nmethod: ${req.method}\npath: ${req.url}\nresponse time: ${getDurationInMilliseconds(start)}ms`);
     })
 }
