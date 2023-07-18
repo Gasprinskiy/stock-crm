@@ -55,10 +55,10 @@ export class EmployeeUsecase implements EmployeeUsecaseInter {
             }
 
             return {
+                empl_id: response.empl_id,
                 ar_id: response.ar_id,
-                stock_id: response.stock_id,
                 fio: response.fio,
-                login: p.login
+                login: response.login
             }
         } catch(err: any) {
             if(err === InternalErrorsMap.ErrNoData || err === EmployeeErrorsMap.ErrWrongLoginOrPassword) {

@@ -1,6 +1,7 @@
 import { AccessRight } from "../constant/index.js";
 
 export interface Employee {
+    empl_id: number;
     ar_id: AccessRight;
     stock_id: number;
     fio: string;
@@ -9,9 +10,9 @@ export interface Employee {
 }
 
 export interface EmployeeAuthResult {
+    empl_id: number;
     ar_id: AccessRight;
-    stock_id: number;
-    fio: string;
     login: string;
+    fio: string;
 }
 
