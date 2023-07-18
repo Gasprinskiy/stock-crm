@@ -54,6 +54,7 @@ export class EmployeeHandler implements DefaultApiHandler {
             })
 
             const token = this.middleware.CreateJwtToken(response)
+            res.cookie("token", token)
             res.json(token)
         } catch (error: any) {
             responseServerError(res, error, this.log)

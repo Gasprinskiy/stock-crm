@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors"
 import bodyParser from "body-parser";
+import cookieParser from "cookie-parser"
 import { Logger } from "../../../tools/logger/index.js";
 
 export class Server {
@@ -19,6 +20,7 @@ export class Server {
         this.serverLog.Info("Server launch...")
         this.app.use(bodyParser.json());
         this.app.use(cors())
+        this.app.use(cookieParser())
         this.app.listen(this.port, () => this.serverLog.Info(`Server running at port: ${this.port}`));
 
         return this.app

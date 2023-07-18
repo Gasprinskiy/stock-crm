@@ -19,7 +19,7 @@ export class ApiMiddleware {
             ar_id: empl.ar_id,
             login: empl.login,
         }
-        return jwt.sign(payload, this.token_key)
+        return jwt.sign(payload, this.token_key, {expiresIn: "7 days"})
     }
 
     public IsAuthorized(req: Request, res: Response, next: NextFunction): void {
@@ -50,7 +50,7 @@ export class ApiMiddleware {
     }
 
     private decodeToken(req: Request): any {
-        const token = req.headers.authorization?.split(' ')[1]  
+        const token = req.cookies.token 
         if (token) {
             return jwt.verify(token, this.token_key)
         }
