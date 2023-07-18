@@ -14,7 +14,7 @@ export const selectOne = async <T>(ts: pgPromise.ITask<object>, query: string, a
     })
 }
 
-export const selectMany = async <T>(ts: pgPromise.ITask<object>, query: string, args?: any) : Promise<T[] | Error> => {
+export const selectMany = async <T>(ts: pgPromise.ITask<object>, query: string, args?: any) : Promise<T[]> => {
     return await ts.many(query, args)
     .then((response: T[]) => {
         return response
