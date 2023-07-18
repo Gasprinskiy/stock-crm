@@ -14,11 +14,14 @@ export class ApiMiddleware {
         this.log = new Logger("middleware")
     }
 
-    public CreateJwtToken(empl: EmployeeAuthResult): string {
+    public CreateJwtToken(empl: EmployeeAuthResult, res: Response): string {
         const payload = {
+            empl_id: empl.empl_id,
             ar_id: empl.ar_id,
             login: empl.login,
         }
+
+        
         return jwt.sign(payload, this.token_key, {expiresIn: "7 days"})
     }
 
