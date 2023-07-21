@@ -4,12 +4,14 @@ import pgPromise from "pg-promise";
 import { EmployeeHandler } from "./core/employee.js";
 import { Usecase } from "../../internal/usecase/index.js";
 import { ApiMiddleware } from "./core/middleware/index.js";
+import { StockHandler } from './core/stock.js';
 
 
 export class ApiHandler {
     private handlers: [
         // Product: ProductHandler,
-        Employee: EmployeeHandler
+        Employee: EmployeeHandler,
+        Stock: StockHandler
     ]
     
     constructor(params: { 
@@ -20,7 +22,8 @@ export class ApiHandler {
     }){
         this.handlers = [
             // new ProductHandler(params.app, params.db, params.ui, params.middleware),
-            new EmployeeHandler(params.app, params.db, params.ui, params.middleware)
+            new EmployeeHandler(params.app, params.db, params.ui, params.middleware),
+            new StockHandler(params.app, params.db, params.ui, params.middleware)
         ]
     }
 
