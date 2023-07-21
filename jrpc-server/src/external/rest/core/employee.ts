@@ -1,6 +1,6 @@
 import express from 'express';
 import pgPromise from "pg-promise";
-import { ApiMethod, ApiRequest, DefaultApiHandler } from '../../../internal/entity/rest/entity/index.js';
+import { ApiMethod, DefaultApiHandler } from '../../../internal/entity/rest/entity/index.js';
 import { Usecase } from "../../../internal/usecase/index.js";
 import {  Request, Response } from 'express';
 import { ApiMiddleware } from './middleware/index.js';

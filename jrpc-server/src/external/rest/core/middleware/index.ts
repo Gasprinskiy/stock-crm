@@ -5,7 +5,7 @@ import { AccessRight } from '../../../../internal/entity/employee/constant/index
 import { Logger } from '../../../../tools/logger/index.js';
 import { logRequests, responseServerError } from '../../../../tools/api-request-handler/index.js';
 import { InternalErrorsMap } from '../../../../internal/entity/global/error/index.js';
-import { ApiRequest, ApiUser } from '../../../../internal/entity/rest/entity/index.js';
+import { ApiUser } from '../../../../internal/entity/rest/entity/index.js';
 import { MiddleWareErrorsMap } from '../../../../internal/entity/middleware/errors/index.js';
 
 export class ApiMiddleware {

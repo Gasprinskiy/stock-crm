@@ -18,11 +18,10 @@ export const handleApiRequest = async <T>(callback: (ts: pgPromise.ITask<object>
 }
 
 export const responseServerError = (res: Response, err: Error, log: Logger): void => {
+    log.Error(err)
+
     const apiError = ApiErrorsList.find(item => item.name === err.message)
     const responseError = apiError ? apiError : ApiErrorsMap.InternalError
-
-    log.Error(responseError.message)
-
     res.statusCode = responseError.code
     res.json({message: responseError.message})
 }
@@ -31,6 +30,6 @@ export const logRequests = (req: Request, res: Response, log: Logger): void => {
     const start = process.hrtime()
 
     res.on("finish", () => {
-        log.Info(`api method call;\nmethod: ${req.method}\npath: ${req.url}\nresponse time: ${getDurationInMilliseconds(start)}ms`);
+        log.Info(`api method call: method: ${req.method}; path: ${req.url}; response time: ${getDurationInMilliseconds(start)}ms.`);
     })
 }
