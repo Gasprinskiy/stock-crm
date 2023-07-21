@@ -23,7 +23,7 @@ export class ApiMiddleware {
             login: empl.login,
         }
         
-        const token = jwt.sign(payload, this.token_key, {expiresIn: "1m"})
+        const token = jwt.sign(payload, this.token_key, {expiresIn: "7 days"})
         res.cookie('token', token)
         return token
     }
