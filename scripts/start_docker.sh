@@ -1,7 +1,7 @@
 #!/bin/bash
 export ROOT=../docker/
 
-cd ../jrpc-server/
+cd ../server/
 
 rm log.txt
 touch log.txt

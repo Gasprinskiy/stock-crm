@@ -2,8 +2,8 @@ version: "3.9"
 
 services:
   jrpc-server:
-    image: jrpc-server
-    container_name: jrpc-server-container
+    image: server
+    container_name: server-container
     environment:
       - LOG_PATH=./log.txt
       - CONF_PATH=../../../../config.yaml
@@ -12,7 +12,7 @@ services:
       dockerfile: ./docker/Dockerfile
       args:
         VERSION: 0.0.1
-        NAME: node-jrpc-server
+        NAME: node-server
     ports:
       - "3000:3000"
     links:
@@ -29,7 +29,8 @@ services:
       POSTGRES_DB: test_db
       PGDATA: /data
     volumes:
-      - ./pg/data:/data
+    - ./pg:/docker-entrypoint-initdb.d
+    - ./pg/data:/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U test_db"]
       interval: 5s
