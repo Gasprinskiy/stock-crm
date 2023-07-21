@@ -1,6 +1,6 @@
 import express from 'express';
 import pgPromise from "pg-promise";
-import { ApiMethod, DefaultApiHandler } from '../../../internal/entity/rest/entity/index.js';
+import { ApiMethod, ApiRequest, DefaultApiHandler } from '../../../internal/entity/rest/entity/index.js';
 import { Usecase } from "../../../internal/usecase/index.js";
 import {  Request, Response } from 'express';
 import { ApiMiddleware } from './middleware/index.js';
@@ -15,8 +15,6 @@ export class EmployeeHandler implements DefaultApiHandler {
     private usecase: Usecase;
     private middleware: ApiMiddleware;
     private log: Logger;
-    //
-    readonly methods: ApiMethod[];
     
     constructor(
         app: express.Express, 
@@ -29,20 +27,6 @@ export class EmployeeHandler implements DefaultApiHandler {
         this.usecase = ui;
         this.middleware = middleware;
         this.log = new Logger("employee-external")
-
-        this.methods = [
-            {
-                path: "auth",
-                handlers: this.auth
-            },
-            {
-                path: "createEmployee",
-                middleware: [
-                    this.middleware.IsAuthorized,
-                ],
-                handlers: this.createEmployee
-            }
-        ]
     }
 
     private async auth(req: Request, res: Response) {
@@ -53,8 +37,7 @@ export class EmployeeHandler implements DefaultApiHandler {
               return this.usecase.Employee.Auth(ts, req.body.params)
             })
 
-            const token = this.middleware.CreateJwtToken(response)
-            res.cookie("token", token)
+            const token = this.middleware.CreateJwtToken(response, res)
             res.json(token)
         } catch (error: any) {
             responseServerError(res, error, this.log)
@@ -77,6 +60,11 @@ export class EmployeeHandler implements DefaultApiHandler {
             "/create_employee",
             this.middleware.CheckAccessRight(AccessRight.full_access, AccessRight.stock_manager).bind(this.middleware),
             this.createEmployee.bind(this)
+        )
+
+        this.app.get(
+            "/is_auth",
+            this.middleware.IsAuthorizedWithoutNext().bind(this.middleware)
         )
     }
 }
