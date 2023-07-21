@@ -1,13 +1,7 @@
 import pgPromise from "pg-promise";
-import { Repository } from "../../repository/index.js";
-import { AuthParams } from "../../entity/employee/params/index.js"; 
-import { Employee, EmployeeAuthResult } from "../../entity/employee/entity/index.js";
-import { InternalErrorsMap } from "../../entity/global/error/index.js";
-import { EmployeeErrorsMap } from "../../entity/employee/error/index.js";
+import { Repository } from "../../repository/index.js";;
 import { Logger } from '../../../tools/logger/index.js';
-import { createHashPassword, checkHashPassword } from "../../../tools/passhash/index.js";
 import { handleRepoDefaultError } from "../../../tools/usecase-err-handler/index.js";
-import { translitLowercaseRuToEn } from "../../../tools/translit/index.js"
 import { Stock } from "../../entity/stock/entity.js";
 
 
@@ -25,10 +19,8 @@ export class StockUsecase implements StockUsecaseInter {
     }
 
     async FindStockListByEmployeeID(ts: pgPromise.ITask<object>, empl_id: number): Promise<Stock[]> {
-        return [{
-            stock_id: 0,
-            name: 'string',
-            address: 'string',
-        }]
+        return handleRepoDefaultError(() => {
+            return this.repository.Stock.FindStockListByEmployeeID(ts, empl_id)
+        }, this.log, "не загрузить список складов")
     }
 }
