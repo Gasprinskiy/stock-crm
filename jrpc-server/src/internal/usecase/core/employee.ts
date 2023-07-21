@@ -64,7 +64,7 @@ export class EmployeeUsecase implements EmployeeUsecaseInter {
             if(err === InternalErrorsMap.ErrNoData || err === EmployeeErrorsMap.ErrWrongLoginOrPassword) {
                 throw EmployeeErrorsMap.ErrWrongLoginOrPassword
             }
-            this.log.Error(`не удалось найти сотрудника по логину, ошибка: ${err.message}`)
+            this.log.Error(err, 'не удалось найти сотрудника по логину')
             throw InternalErrorsMap.ErrInternalError
         }
     }

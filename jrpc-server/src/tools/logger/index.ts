@@ -9,7 +9,7 @@ interface LoggerInter {
     Info(message: string): void;
     Debug(message: string): void;
     Warn(message: string): void;
-    Error(message: string): void;
+    Error(err: any): void;
 }
 
 enum logType {info, debug, warn, error}
@@ -43,7 +43,7 @@ export class Logger implements LoggerInter {
         this.noFileLog = noFileLog;
     }
 
-    public Info(message: string): void {
+    public Info(message: string): void { 
         const log = this.logWithPrefix(message)
         this.CustomLog.info(log)
         this.writeToFileLog(logTypeMap[logType.info], log)
@@ -61,13 +61,13 @@ export class Logger implements LoggerInter {
         this.writeToFileLog(logTypeMap[logType.warn], log)
     }
 
-    public Error(message: string): void {
-        const log = this.logWithPrefix(message)
+    public Error(err: any, optionalText?: string): void {
+        const log = this.errorLogWithPrefix(err.message, err.stack, optionalText)
         this.CustomLog.error(log)
         this.writeToFileLog(logTypeMap[logType.error], log)
     }
 
-    async GetLogs() {
+    public async GetLogs() {
         const data = await fs.readFileSync(this.Path, {encoding: "utf-8"})
         return data
     }
@@ -75,6 +75,16 @@ export class Logger implements LoggerInter {
     private logWithPrefix(message: string) {
         return `[${this.Prefix}] ${message}`
     }
+
+    private errorLogWithPrefix(message: string, stack?: string, optionalText?: string) : string {
+        const optionalTextString = optionalText ? ` ${optionalText}: ` : ''
+        const stackTextString = stack ? ` ${stack.replace('/^Error:\s\S+$/gm', '')}` : ''
+        const messageText = optionalText ? `${message}` : ` ${message}`
+
+        return `[${this.Prefix}]${optionalTextString}${messageText};${stackTextString}`
+    }
+
+
 
     private async writeToFileLog(type: string, message: string) {
         if (!this.noFileLog) {

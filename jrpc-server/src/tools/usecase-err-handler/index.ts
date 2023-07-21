@@ -7,7 +7,7 @@ export const handleRepoDefaultError = async <T>(callback: () => Promise<T>, log:
         return await callback()
     } catch(err: any) {
         if (err.name != InternalErrorsMap.ErrNoData) {
-            log.Error(`${logMsg}, ошибка: ${err.message}`)
+            log.Error(err, logMsg)
             throw InternalErrorsMap.ErrInternalError
         }
         throw err

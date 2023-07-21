@@ -23,7 +23,7 @@ export class PostgresDBase {
             this.log.Info("Connection to postgres was successful");
         })
         .catch((err: Error) => {
-            this.log.Error(`Error while connecting to postgres: ${err.message}`,)
+            this.log.Error(err, 'Error while connecting to postgres',)
             process.exit(1)
         })
 
