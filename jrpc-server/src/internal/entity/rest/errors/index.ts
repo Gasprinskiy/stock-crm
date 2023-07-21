@@ -46,6 +46,12 @@ const EmployeeAlreadyExists: ApiError = {
     message: "работник с такими данными уже существует"
 }
 
+const JwtExpored: ApiError = {
+    code: 498,
+    name: "JwtExpired",
+    message: "срок сессии истек, требуется повторная авторизация"
+}
+
 export const ApiErrorsMap = {
     MethodNotFound, 
     InternalError, 
@@ -53,6 +59,7 @@ export const ApiErrorsMap = {
     ErrWrongLoginOrPassword, 
     ErrNotAuthorized, 
     ErrNoAccesRight,
-    EmployeeAlreadyExists
+    EmployeeAlreadyExists,
+    JwtExpored
 }
 export const ApiErrorsList : ApiError[] = Object.values(ApiErrorsMap)

@@ -15,4 +15,3 @@ export interface EmployeeAuthResult {
     login: string;
     fio: string;
 }
-
