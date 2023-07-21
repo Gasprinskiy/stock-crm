@@ -18,7 +18,7 @@ export class EmployeeRepo implements EmployeeRepoInter {
     }
     public async GetEmployeeByLogin(ts: pgPromise.ITask<object>, login: string): Promise<Employee> {
         const sqlQuery = `
-        SELECT e.ar_id, e.fio, e.login, e.password
+        SELECT e.empl_id, e.ar_id, e.fio, e.login, e.password
         FROM employees e
         WHERE e.login = $1`
 
