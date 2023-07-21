@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express';
-import { SimpleJSONRPCMethod, JSONRPCServerMiddleware } from "json-rpc-2.0";
+import { AccessRight } from '../../employee/constant/index.js';
 
 
 export interface ApiMethod {
@@ -9,7 +9,6 @@ export interface ApiMethod {
 }
 
 export interface DefaultApiHandler {
-    readonly methods: ApiMethod[]; 
     Init(): void;
 }
 
@@ -17,4 +16,11 @@ export interface MethodLog {
     name: any;
     params: any;
     response_time: number;
+}
+
+
+export interface ApiUser {
+    empl_id: number;
+    ar_id: AccessRight;
+    login: string;
 }
