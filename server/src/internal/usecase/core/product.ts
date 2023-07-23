@@ -5,10 +5,11 @@ import { Logger, LoggerFields } from "../../../tools/logger/index.js"
 import { Product, ProductListResponse } from '../../entity/product/entity/index.js';
 import { CreateProductParam, FindProductListParam } from "../../entity/product/params/index.js"
 import { handleRepoDefaultError } from "../../../tools/usecase-err-handler/index.js";
+import { DistributionStockID } from '../../entity/stock/constant/index.js';
 
 interface ProdcuctUsecaseInter {
-    GetProductByID(ts: pgPromise.ITask<object>, id: number): Promise<Product|Error>;
-    CreateProduct(ts: pgPromise.ITask<object>, p: CreateProductParam): Promise<Product|Error>;
+    GetProductByID(ts: pgPromise.ITask<object>, id: number): Promise<Product>;
+    CreateProduct(ts: pgPromise.ITask<object>, p: CreateProductParam): Promise<number>;
     FindProductList(ts: pgPromise.ITask<object>, p: FindProductListParam, employee_login: string): Promise<ProductListResponse>;
 }
 
@@ -27,10 +28,38 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
         }, this.log, "не удалось получить продукт по ID")
     }
 
-    public async CreateProduct(ts: pgPromise.ITask<object>, p: CreateProductParam): Promise<Product> {
-        return handleRepoDefaultError(() => {
-            return this.repository.Product.CreateProduct(ts, p)
-        }, this.log, "не удалось создать продукт")
+    public async CreateProduct(ts: pgPromise.ITask<object>, p: CreateProductParam): Promise<number> {
+        try {
+            const productID = await this.repository.Product.CreateProduct(ts, p)
+
+            p.v_type_list.forEach(async v_type => {
+                try {
+                    const variationID = await this.repository.Product.CreateProductVariation(ts, productID, v_type.id)
+                    
+                    try {
+                        // все создаваемые продукты в первую очередь попадают в склад распределния
+                        await this.repository.Product.AddProductToStock(ts, {
+                            stock_id: DistributionStockID,
+                            product_id: productID,
+                            amount: v_type.amount,
+                            variation_id: variationID,
+                        })
+                    } catch(err: any) {
+                        this.log.Error(err, 'не добавить продукт на склад распределения')
+                        throw InternalErrorsMap.ErrInternalError
+                    }
+
+                } catch(err: any) {
+                    this.log.Error(err, 'не создать вариацию продукта')
+                    throw InternalErrorsMap.ErrInternalError
+                }
+            })
+
+            return productID
+        } catch(err: any) {
+            this.log.Error(err, 'не удалось создать продукт')
+            throw InternalErrorsMap.ErrInternalError
+        }
     }
     
     // FindProductList поиск товаров

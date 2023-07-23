@@ -1,12 +1,14 @@
 import pgPromise from "pg-promise";
 import { Product } from "../../entity/product/entity/index.js";
-import { CreateProductParam, FindProductListParam, ProductPriceRange } from "../../entity/product/params/index.js"
+import { AddProductToStockParam, CreateProductParam, FindProductListParam, ProductPriceRange } from "../../entity/product/params/index.js"
 import { selectOne, selectMany } from "../../../tools/pg-err-handler/index.js";
 import { CountResponse } from "../../entity/global/entity/index.js";
 
 export interface ProductRepoInter {
     GetProductByID(ts: pgPromise.ITask<object>, id: number): Promise<Product>;
-    CreateProduct(ts: pgPromise.ITask<object>, p: CreateProductParam): Promise<Product>;
+    CreateProduct(ts: pgPromise.ITask<object>, p: CreateProductParam): Promise<number>;
+    CreateProductVariation(ts: pgPromise.ITask<object>, product_id: number, v_type_id: number): Promise<number>;
+    AddProductToStock(ts: pgPromise.ITask<object>, params: AddProductToStockParam): Promise<void>;
     FindProductListByStockID(ts: pgPromise.ITask<object>, p: FindProductListParam, stockID: number): Promise<Product[]>;
     FindProductCount(ts: pgPromise.ITask<object>,  p: FindProductListParam, stockID: number): Promise<CountResponse>;
     // LoadPriceRange(ts: pgPromise.ITask<object>): Promise<ProductPriceRange>
@@ -23,11 +25,28 @@ export class ProductRepository implements ProductRepoInter {
         return selectOne(ts, sqlQuery, id)
     }
 
-    public async CreateProduct(ts: pgPromise.ITask<object>, p: CreateProductParam): Promise<Product> {
+    public async CreateProduct(ts: pgPromise.ITask<object>, p: CreateProductParam): Promise<number> {
         const sqlQuery = `
         INSERT INTO product(product_name, description, tags)
         VALUES ('${p.product_name}', '${p.description}', '${p.tags}')
-        RETURNING product_id, product_name, description, tags, creation_date`
+        RETURNING product_id`
+
+        return ts.one(sqlQuery)
+    }
+
+    public async CreateProductVariation(ts: pgPromise.ITask<object>, product_id: number, v_type_id: number): Promise<number> {
+        const sqlQuery = `
+        INSERT INTO product$variations(product_id, v_type_id)
+        VALUES ('${product_id}', '${v_type_id}')
+        RETURNING variation_id`
+
+        return ts.one(sqlQuery)
+    }
+    
+    public async AddProductToStock(ts: pgPromise.ITask<object>, params: AddProductToStockParam): Promise<void> {
+        const sqlQuery = `
+        INSERT INTO product$stocks(stock_id, product_id, amount, variation_id)
+        VALUES ('${params.stock_id}', '${params.product_id}', '${params.amount}', '${params.variation_id}')`
 
         return ts.one(sqlQuery)
     }

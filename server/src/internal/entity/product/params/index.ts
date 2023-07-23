@@ -3,6 +3,7 @@ export interface CreateProductParam {
     product_name: string;
     description: string;
     tags: string;
+    v_type_list: {amount: number; id: number;}[];
 }
 
 export interface FindProductListParam {
@@ -16,4 +17,11 @@ export interface FindProductListParam {
 export interface ProductPriceRange {
     min_price: number;
     max_price: number
+}
+
+export interface AddProductToStockParam {
+    product_id: number;
+    variation_id: number;
+    stock_id: number;
+    amount: number;
 }
