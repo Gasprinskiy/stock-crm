@@ -2,6 +2,7 @@ import fs from "fs"
 import { pino } from "pino";
 import { timezone_date_string } from "../datefunctions/index.js";
 
+export type LoggerFields = {[key: string]: any}
 
 const { env } = process
 
@@ -33,14 +34,27 @@ export class Logger implements LoggerInter {
     private Prefix: string;
     private CustomLog: pino.Logger<pino.LoggerOptions>;
     private noFileLog: boolean;
+    private optinalFileds: string;
 
     constructor(prefix: string, noFileLog = false) {  
         this.Path = env.LOG_PATH!;
         // this.Path = "./log.txt"
         this.Prefix = prefix;
         this.CustomLog = pino();
+        this.optinalFileds = ''
 
         this.noFileLog = noFileLog;
+    }
+
+    public WithFields(fields: LoggerFields): this {
+        this.optinalFileds = ""
+        console.log("fileds", fields);
+        
+        Object.keys(fields).forEach(key => {
+            this.optinalFileds += `${key}: ${fields[key]} `
+        })
+        
+        return this
     }
 
     public Info(message: string): void { 
@@ -73,18 +87,17 @@ export class Logger implements LoggerInter {
     }
 
     private logWithPrefix(message: string) {
-        return `[${this.Prefix}] ${message}`
+        return `[${this.Prefix}] ${message} ${this.optinalFileds}`
     }
 
     private errorLogWithPrefix(message: string, stack?: string, optionalText?: string) : string {
         const optionalTextString = optionalText ? ` ${optionalText}: ` : ''
-        const stackTextString = stack ? ` ${stack.replace('/^Error:\s\S+$/gm', '')}` : ''
-        const messageText = optionalText ? `${message}` : ` ${message}`
+        const stackTextString = stack ? ` ${stack}` : ''
+        const messageText = optionalText ? `${message}` : `${message}`
+        const fileds = this.optinalFileds.length > 0 ? `${this.optinalFileds};` : ''
 
-        return `[${this.Prefix}]${optionalTextString}${messageText};${stackTextString}`
+        return `[${this.Prefix}]${optionalTextString}${messageText}; ${fileds}\n${stackTextString}`
     }
-
-
 
     private async writeToFileLog(type: string, message: string) {
         if (!this.noFileLog) {

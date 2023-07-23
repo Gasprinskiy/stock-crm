@@ -4,7 +4,7 @@ import { AuthParams } from "../../entity/employee/params/index.js";
 import { Employee, EmployeeAuthResult } from "../../entity/employee/entity/index.js";
 import { InternalErrorsMap } from "../../entity/global/error/index.js";
 import { EmployeeErrorsMap } from "../../entity/employee/error/index.js";
-import { Logger } from '../../../tools/logger/index.js';
+import { Logger, LoggerFields } from '../../../tools/logger/index.js';
 import { createHashPassword, checkHashPassword } from "../../../tools/passhash/index.js";
 import { handleRepoDefaultError } from "../../../tools/usecase-err-handler/index.js";
 import { translitLowercaseRuToEn } from "../../../tools/translit/index.js"
@@ -44,6 +44,9 @@ export class EmployeeUsecase implements EmployeeUsecaseInter {
 
     // Auth авторизация
     public async Auth(ts: pgPromise.ITask<object>, p: AuthParams): Promise<EmployeeAuthResult> {        
+        const lf: LoggerFields = {
+            "auth_login": p.login
+        } 
         // поиск по логину
         try {
             const response = await this.repository.Employee.GetEmployeeByLogin(ts, p.login)
@@ -64,7 +67,7 @@ export class EmployeeUsecase implements EmployeeUsecaseInter {
             if(err === InternalErrorsMap.ErrNoData || err === EmployeeErrorsMap.ErrWrongLoginOrPassword) {
                 throw EmployeeErrorsMap.ErrWrongLoginOrPassword
             }
-            this.log.Error(err, 'не удалось найти сотрудника по логину')
+            this.log.WithFields(lf).Error(err, 'не удалось найти сотрудника по логину')
             throw InternalErrorsMap.ErrInternalError
         }
     }
