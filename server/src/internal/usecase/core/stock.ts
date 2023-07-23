@@ -2,7 +2,7 @@ import pgPromise from "pg-promise";
 import { Repository } from "../../repository/index.js";;
 import { Logger } from '../../../tools/logger/index.js';
 import { handleRepoDefaultError } from "../../../tools/usecase-err-handler/index.js";
-import { Stock } from "../../entity/stock/entity.js";
+import { Stock } from "../../entity/stock/entity/entity.js";
 
 
 interface StockUsecaseInter {

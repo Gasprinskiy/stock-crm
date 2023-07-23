@@ -1,7 +1,7 @@
 import pgPromise from "pg-promise";
 import { Employee, EmployeeAuthResult } from '../../entity/employee/entity/index.js';
 import { selectMany, selectOne } from "../../../tools/pg-err-handler/index.js";
-import { Stock } from "../../entity/stock/entity.js";
+import { Stock } from "../../entity/stock/entity/entity.js";
 
 export interface StockRepoInter {
     FindStockListByEmployeeID(ts: pgPromise.ITask<object>, empl_id: number): Promise<Stock[]>
