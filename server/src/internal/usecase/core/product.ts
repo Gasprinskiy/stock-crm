@@ -66,7 +66,7 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
                 if (err === InternalErrorsMap.ErrNoData) {
                     throw InternalErrorsMap.ErrNoData
                 }
-                this.log.WithFields(lf).Error('не удалось загрузить список продуктов')
+                this.log.WithFields(lf).Error(err, 'не удалось загрузить список продуктов')
                 throw InternalErrorsMap.ErrInternalError
             } 
         } catch(err: any) {
