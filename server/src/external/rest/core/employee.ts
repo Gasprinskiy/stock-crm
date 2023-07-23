@@ -16,16 +16,16 @@ export class EmployeeHandler implements DefaultApiHandler {
     private middleware: ApiMiddleware;
     private log: Logger;
     
-    constructor(
-        app: express.Express, 
-        db: pgPromise.IDatabase<object>,
-        ui: Usecase, 
-        middleware: ApiMiddleware
-    ){
-        this.app = app;
-        this.db = db;
-        this.usecase = ui;
-        this.middleware = middleware;
+    constructor(params: { 
+        app: express.Express; 
+        db: pgPromise.IDatabase<object>; 
+        ui: Usecase; 
+        middleware: ApiMiddleware;
+    }){
+        this.app = params.app;
+        this.db = params.db;
+        this.usecase = params.ui;
+        this.middleware = params.middleware;
         this.log = new Logger("employee-external")
     }
 

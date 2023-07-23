@@ -15,16 +15,16 @@ export class ProductHandler implements DefaultApiHandler {
     private middleware: ApiMiddleware;
     private log: Logger;
 
-    constructor(
+    constructor(params: {
         app: express.Express, 
         db: pgPromise.IDatabase<object>,
         ui: Usecase, 
         middleware: ApiMiddleware
-    ){
-        this.app = app;
-        this.db = db;
-        this.usecase = ui;
-        this.middleware = middleware;
+    }){
+        this.app = params.app;
+        this.db = params.db;
+        this.usecase = params.ui;
+        this.middleware = params.middleware;
         this.log = new Logger("product-external")
     }
 
@@ -39,7 +39,7 @@ export class ProductHandler implements DefaultApiHandler {
             '/create_product',
             this.middleware.CheckAccessRight(
                 AccessRight.full_access, 
-                AccessRight.stock_manager,
+                AccessRight.distributor,
             ).bind(this.middleware),
             this.createProduct.bind(this)
         )

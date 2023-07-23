@@ -15,16 +15,16 @@ export class StockHandler implements DefaultApiHandler {
     private middleware: ApiMiddleware;
     private log: Logger;
     
-    constructor(
+    constructor(params:{
         app: express.Express, 
         db: pgPromise.IDatabase<object>,
         ui: Usecase, 
         middleware: ApiMiddleware
-    ){
-        this.app = app;
-        this.db = db;
-        this.usecase = ui;
-        this.middleware = middleware;
+    }){
+        this.app = params.app;
+        this.db = params.db;
+        this.usecase = params.ui;
+        this.middleware = params.middleware;
         this.log = new Logger("stock-external")
     }
 
@@ -37,7 +37,7 @@ export class StockHandler implements DefaultApiHandler {
     }
 
     private async loadStocks(req: Request, res: Response) {
-        const { empl_id } = req.user
+        const { empl_id, ar_id } = req.user
         handleApiRequest((ts) => {
             return this.usecase.Stock.FindStockListByEmployeeID(ts, empl_id)
         }, this.log, this.db, {req: req, res: res})
