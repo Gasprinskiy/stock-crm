@@ -8,7 +8,6 @@ export interface CreateProductParam {
 export interface FindProductListParam {
     limit: number;
     offset: number;
-    employee_login: string;
     query: string | null;
     show_all: boolean;
     price_range: ProductPriceRange;

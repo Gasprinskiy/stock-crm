@@ -1,7 +1,7 @@
 import { InternalErrorsMap } from '../../entity/global/error/index.js';
 import pgPromise from "pg-promise";
 import { Repository } from "../../repository/index.js";
-import { Logger } from "../../../tools/logger/index.js"
+import { Logger, LoggerFields } from "../../../tools/logger/index.js"
 import { Product, ProductListResponse } from '../../entity/product/entity/index.js';
 import { CreateProductParam, FindProductListParam } from "../../entity/product/params/index.js"
 import { handleRepoDefaultError } from "../../../tools/usecase-err-handler/index.js";
@@ -9,7 +9,7 @@ import { handleRepoDefaultError } from "../../../tools/usecase-err-handler/index
 interface ProdcuctUsecaseInter {
     GetProductByID(ts: pgPromise.ITask<object>, id: number): Promise<Product|Error>;
     CreateProduct(ts: pgPromise.ITask<object>, p: CreateProductParam): Promise<Product|Error>;
-    FindProductList(ts: pgPromise.ITask<object>, p: FindProductListParam): Promise<ProductListResponse|Error>;
+    FindProductList(ts: pgPromise.ITask<object>, p: FindProductListParam, employee_login: string): Promise<ProductListResponse>;
 }
 
 export class ProductUsecase implements ProdcuctUsecaseInter {
@@ -21,51 +21,57 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
         this.log = new Logger("product")
     }
 
-    public async GetProductByID(ts: pgPromise.ITask<object>, id: number): Promise<Product | Error> {
+    public async GetProductByID(ts: pgPromise.ITask<object>, id: number): Promise<Product> {
         return handleRepoDefaultError(() => {
             return this.repository.Product.GetProductByID(ts, id)
         }, this.log, "не удалось получить продукт по ID")
     }
 
-    public async CreateProduct(ts: pgPromise.ITask<object>, p: CreateProductParam): Promise<Product | Error> {
+    public async CreateProduct(ts: pgPromise.ITask<object>, p: CreateProductParam): Promise<Product> {
         return handleRepoDefaultError(() => {
             return this.repository.Product.CreateProduct(ts, p)
         }, this.log, "не удалось создать продукт")
     }
     
     // FindProductList поиск товаров
-    public async FindProductList(ts: pgPromise.ITask<object>, p: FindProductListParam): Promise<ProductListResponse | Error> {
-        // получить работника по логину что бы далее загружать продукты по складу к которому он прикреплен
-        const employeeResponse = await this.repository.Employee.GetEmployeeByLogin(ts, p.employee_login)
-        if (employeeResponse instanceof Error) {
-            this.log.Error(`не удалось найти сотрудника по логину, ошибка: ${employeeResponse}`)
-            return InternalErrorsMap.ErrInternalError
-        } 
-        
-        // выставить корренктный параметр offset перед загрузкой списка товаров
-        p.offset = p.offset - 1
-        p.offset = p.limit * p.offset
-
-        // поиск списока товаров
-        const productResponse = await this.repository.Product.FindProductListByStockID(ts, p, employeeResponse.stock_id)
-        if (productResponse instanceof Error) {
-            if (productResponse === InternalErrorsMap.ErrNoData) {
-                return productResponse
-            }
-            this.log.Error(`не удалось загрузить список продуктов, ошибка: ${productResponse}`)
-            return InternalErrorsMap.ErrInternalError
+    public async FindProductList(ts: pgPromise.ITask<object>, p: FindProductListParam, employee_login: string): Promise<ProductListResponse> {
+        const lf: LoggerFields = {
+            "employee_login": employee_login
         }
+        try {
+            // получить работника по логину что бы далее загружать продукты по складу к которому он прикреплен
+            const employeeResponse = await this.repository.Employee.GetEmployeeByLogin(ts, employee_login)
 
-        // количество страниц с продуктами
-        const pageCountResponse = await this.repository.Product.FindProductCount(ts, p, employeeResponse.stock_id)
-        if (pageCountResponse instanceof Error) {
-            this.log.Error(`не удалось загрузить общее количество товара, ошибка: ${pageCountResponse}`)
-            return InternalErrorsMap.ErrInternalError
-        }
+            try {
+                // выставить корренктный параметр offset перед загрузкой списка товаров
+                p.offset = p.offset - 1
+                p.offset = p.limit * p.offset
 
-        return {
-            product_list: productResponse,
-            page_count: Math.ceil(pageCountResponse.count / p.limit)
+                // поиск списока товаров
+                const productResponse = await this.repository.Product.FindProductListByStockID(ts, p, employeeResponse.stock_id)
+
+                try {
+                    const pageCountResponse = await this.repository.Product.FindProductCount(ts, p, employeeResponse.stock_id)
+
+                    return {
+                        product_list: productResponse,
+                        page_count: Math.ceil(pageCountResponse.count / p.limit)
+                    }
+                    
+                } catch(err: any) {
+                    this.log.WithFields(lf).Error(err, 'не удалось загрузить общее количество товара, ошибка')
+                    throw InternalErrorsMap.ErrInternalError
+                }
+            } catch(err: any) {
+                if (err === InternalErrorsMap.ErrNoData) {
+                    throw InternalErrorsMap.ErrNoData
+                }
+                this.log.WithFields(lf).Error('не удалось загрузить список продуктов')
+                throw InternalErrorsMap.ErrInternalError
+            } 
+        } catch(err: any) {
+            this.log.WithFields(lf).Error(err, 'не удалось найти сотрудника по логину')
+            throw InternalErrorsMap.ErrInternalError
         }
     }
 }
