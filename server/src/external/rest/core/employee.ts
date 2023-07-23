@@ -29,6 +29,24 @@ export class EmployeeHandler implements DefaultApiHandler {
         this.log = new Logger("employee-external")
     }
 
+    public Init(){
+        this.app.post(
+            "/auth", 
+            this.auth.bind(this)
+        )
+
+        this.app.post(
+            "/create_employee",
+            this.middleware.CheckAccessRight(AccessRight.full_access, AccessRight.stock_manager).bind(this.middleware),
+            this.createEmployee.bind(this)
+        )
+
+        this.app.get(
+            "/is_auth",
+            this.middleware.IsAuthorizedWithoutNext().bind(this.middleware)
+        )
+    }
+
     private async auth(req: Request, res: Response) {
         logRequests(req, res, this.log)
         
@@ -48,23 +66,5 @@ export class EmployeeHandler implements DefaultApiHandler {
         handleApiRequest((ts) => {
             return this.usecase.Employee.CreateEmployee(ts, req.body.params)
         }, this.log, this.db, {req: req, res: res})
-    }
-
-    public Init(){
-        this.app.post(
-            "/auth", 
-            this.auth.bind(this)
-        )
-
-        this.app.post(
-            "/create_employee",
-            this.middleware.CheckAccessRight(AccessRight.full_access, AccessRight.stock_manager).bind(this.middleware),
-            this.createEmployee.bind(this)
-        )
-
-        this.app.get(
-            "/is_auth",
-            this.middleware.IsAuthorizedWithoutNext().bind(this.middleware)
-        )
     }
 }
