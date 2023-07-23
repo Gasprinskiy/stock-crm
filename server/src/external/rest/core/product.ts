@@ -1,74 +1,72 @@
-// import { Usecase } from './../../../internal/usecase/index.js';
-// // import { JsrpcMethod, DefaultJRPCHandler } from '../../../internal/entity/rest/entity/index.js';
-// import { CreateProductParam, FindProductListParam,  } from './../../../internal/entity/product/params/index.js';
-// import pgPromise from "pg-promise";
-// import { JSONRPCParams, JSONRPCServer } from "json-rpc-2.0";
-// import { Request, Response } from 'express-serve-static-core';
-// import { NextFunction } from 'connect';
-// import { JRPCMiddleware } from './middleware/index.js';
+import express from 'express';
+import { Usecase } from './../../../internal/usecase/index.js';
+import { DefaultApiHandler } from '../../../internal/entity/rest/entity/index.js';
+import pgPromise from "pg-promise";
+import { Request, Response } from 'express-serve-static-core';
+import { ApiMiddleware } from './middleware/index.js';
+import { handleApiRequest } from '../../../tools/api-request-handler/index.js';
+import { Logger } from '../../../tools/logger/index.js';
+import { AccessRight } from '../../../internal/entity/employee/constant/index.js';
 
-// export class ProductHandler implements DefaultJRPCHandler {
-//     private jsrpcServer: JSONRPCServer<void>;
-//     private db: pgPromise.IDatabase<object>;
-//     private usecase: Usecase;
-//     private middleware: JRPCMiddleware;
-//     readonly methods: JsrpcMethod[];
-//     constructor(
-//         jrpc: JSONRPCServer<void>, 
-//         db: pgPromise.IDatabase<object>,
-//         ui: Usecase, 
-//         middleware: JRPCMiddleware
-//     ){
-//         this.jsrpcServer = jrpc;
-//         this.db = db;
-//         this.usecase = ui;
-//         this.middleware = middleware;
+export class ProductHandler implements DefaultApiHandler {
+    private app: express.Express;
+    private db: pgPromise.IDatabase<object>;
+    private usecase: Usecase;
+    private middleware: ApiMiddleware;
+    private log: Logger;
 
-//         this.methods = [
-//             {
-//                 name: "getPoductById",
-//                 handler: this.getProductByID
-//             },
-//             {
-//                 name: "createProduct",
-//                 handler: this.createProduct
-//             },
-//             {
-//                 name: "plusMinus",
-//                 handler: this.plusMinus
-//             },
-//             {
-//                 name: "findProductList",
-//                 handler: this.findProductList
-//             },
-//         ]
-//     }
+    constructor(
+        app: express.Express, 
+        db: pgPromise.IDatabase<object>,
+        ui: Usecase, 
+        middleware: ApiMiddleware
+    ){
+        this.app = app;
+        this.db = db;
+        this.usecase = ui;
+        this.middleware = middleware;
+        this.log = new Logger("product-external")
+    }
 
-//     private async getProductByID(params: {id: number}) {
-//         return await this.db.tx((ts) => {
-//             return this.usecase.Product.GetProductByID(ts, params.id)
-//         })
-//     }
+    public Init(){
+        this.app.get(
+            '/product/:id',
+            this.middleware.IsAuthorized.bind(this.middleware),
+            this.getProductByID.bind(this)
+        )
 
-//     private async createProduct(params: CreateProductParam) {
-//         return await this.db.tx((ts) => {
-//             return this.usecase.Product.CreateProduct(ts, params)
-//         })
-//     }
+        this.app.post(
+            '/create_product',
+            this.middleware.CheckAccessRight(
+                AccessRight.full_access, 
+                AccessRight.stock_manager,
+            ).bind(this.middleware),
+            this.createProduct.bind(this)
+        )
 
-//     private async findProductList(params: FindProductListParam) {
-//         return await this.db.tx((ts) => {
-//             return this.usecase.Product.FindProductList(ts, params)
-//         })
-//     }
+        this.app.get(
+            '/product_list',
+            this.middleware.IsAuthorized.bind(this.middleware),
+            this.findProductList.bind(this)
+        )
+    }
 
-//     private async plusMinus(params: { a: number; b: number; c: number; }): Promise<number | Error> {
-//         return this.usecase.Tempalte.Sum(params.a, params.b)
-//     }
+    private async getProductByID(req: Request, res: Response) {
+        handleApiRequest((ts) => {
+            return this.usecase.Product.GetProductByID(ts, Number(req.params.id))
+        }, this.log, this.db, {req: req, res: res})
+    }
 
-//     public Init(){
-//         this.methods.forEach(method => {
-//             this.jsrpcServer.addMethod(method.name, method.handler.bind(this))
-//         })
-//     }
-// }
+    private async createProduct(req: Request, res: Response) {
+        handleApiRequest((ts) => {
+            return this.usecase.Product.CreateProduct(ts, req.body.params)
+        }, this.log, this.db, {req: req, res: res})
+    }
+
+    private async findProductList(req: Request, res: Response) {
+        const { login } = req.user
+        handleApiRequest((ts) => {
+            return this.usecase.Product.FindProductList(ts, req.body.params, login)
+        }, this.log, this.db, {req: req, res: res})
+    }
+}
