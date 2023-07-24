@@ -15,7 +15,7 @@ services:
         NAME: node-server
     ports:
       - "3000:3000"
-    links:
+    depends_on:
       - db
     command: yarn start 
   db:
