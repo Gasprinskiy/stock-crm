@@ -96,7 +96,7 @@ export class Logger implements LoggerInter {
         const messageText = optionalText ? `${message}` : `${message}`
         const fileds = this.optinalFileds.length > 0 ? `${this.optinalFileds};` : ''
 
-        return `[${this.Prefix}]${optionalTextString}${messageText}; ${fileds}\n${stackTextString}`
+        return `[${this.Prefix}] ${optionalTextString}${messageText}; ${fileds}\n${stackTextString}`
     }
 
     private async writeToFileLog(type: string, message: string) {

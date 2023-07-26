@@ -7,6 +7,7 @@ import { ApiMiddleware } from './middleware/index.js';
 import { logRequests, responseServerError, handleApiRequest } from '../../../tools/api-request-handler/index.js';
 import { Logger } from '../../../tools/logger/index.js';
 import { AccessRight } from '../../../internal/entity/employee/constant/index.js';
+import { SessionManager } from '../../../cmd/init/session_manager/index.js';
 
 
 export class EmployeeHandler implements DefaultApiHandler {
@@ -15,18 +16,21 @@ export class EmployeeHandler implements DefaultApiHandler {
     private usecase: Usecase;
     private middleware: ApiMiddleware;
     private log: Logger;
+    private sessionManager: SessionManager;
     
     constructor(params: { 
         app: express.Express; 
         db: pgPromise.IDatabase<object>; 
         ui: Usecase; 
         middleware: ApiMiddleware;
+        sessionManager: SessionManager;
     }){
         this.app = params.app;
         this.db = params.db;
         this.usecase = params.ui;
         this.middleware = params.middleware;
         this.log = new Logger("employee-external")
+        this.sessionManager = params.sessionManager
     }
 
     public Init(){
@@ -51,13 +55,16 @@ export class EmployeeHandler implements DefaultApiHandler {
         logRequests(req, res, this.log)
         
         try {
-            const response = await this.db.tx((ts) => {
-              return this.usecase.Employee.Auth(ts, req.body.params)
-            })
+            await this.sessionManager.Begin()
+
+            const response = await this.usecase.Employee.Auth(this.sessionManager.client, req.body.params)
+
+            await this.sessionManager.Commit
 
             const token = this.middleware.CreateJwtToken(response, res)
             res.json(token)
         } catch (err: any) {
+            this.sessionManager.Rollback()
             responseServerError(res, err, this.log)
         }
     }
@@ -65,6 +72,6 @@ export class EmployeeHandler implements DefaultApiHandler {
     private async createEmployee(req: Request, res: Response) {
         handleApiRequest((ts) => {
             return this.usecase.Employee.CreateEmployee(ts, req.body.params)
-        }, this.log, this.db, {req: req, res: res})
+        }, this.log, this.sessionManager, {req: req, res: res})
     }
 }

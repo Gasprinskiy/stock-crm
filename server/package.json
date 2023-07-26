@@ -21,6 +21,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^18.11.10",
+    "@types/pg": "^8.10.2",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.44.0",
@@ -48,8 +49,9 @@
     "jsonrpc-ts": "^0.2.1",
     "jsonwebtoken": "^9.0.0",
     "node-dependency-injection": "^3.0.5",
-    "pg": "^8.10.0",
+    "pg": "^8.11.1",
     "pg-promise": "^11.4.3",
+    "pg-types": "^4.0.1",
     "pino": "^8.11.0",
     "pino-pretty": "^10.0.0",
     "pino-tee": "^0.3.0",

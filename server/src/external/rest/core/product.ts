@@ -7,6 +7,7 @@ import { ApiMiddleware } from './middleware/index.js';
 import { handleApiRequest } from '../../../tools/api-request-handler/index.js';
 import { Logger } from '../../../tools/logger/index.js';
 import { AccessRight } from '../../../internal/entity/employee/constant/index.js';
+import { SessionManager } from '../../../cmd/init/session_manager/index.js';
 
 export class ProductHandler implements DefaultApiHandler {
     private app: express.Express;
@@ -14,18 +15,21 @@ export class ProductHandler implements DefaultApiHandler {
     private usecase: Usecase;
     private middleware: ApiMiddleware;
     private log: Logger;
+    private sessionManager: SessionManager;
 
     constructor(params: {
         app: express.Express, 
         db: pgPromise.IDatabase<object>,
         ui: Usecase, 
-        middleware: ApiMiddleware
+        middleware: ApiMiddleware,
+        sessionManager: SessionManager
     }){
         this.app = params.app;
         this.db = params.db;
         this.usecase = params.ui;
         this.middleware = params.middleware;
         this.log = new Logger("product-external")
+        this.sessionManager = params.sessionManager
     }
 
     public Init(){
@@ -54,19 +58,19 @@ export class ProductHandler implements DefaultApiHandler {
     private async getProductByID(req: Request, res: Response) {
         handleApiRequest((ts) => {
             return this.usecase.Product.GetProductByID(ts, Number(req.params.id))
-        }, this.log, this.db, {req: req, res: res})
+        }, this.log, this.sessionManager, {req: req, res: res})
     }
 
     private async createProduct(req: Request, res: Response) {
         handleApiRequest((ts) => {
             return this.usecase.Product.CreateProduct(ts, req.body.params)
-        }, this.log, this.db, {req: req, res: res})
+        }, this.log, this.sessionManager, {req: req, res: res})
     }
 
     private async findProductList(req: Request, res: Response) {
         const { login } = req.user
         handleApiRequest((ts) => {
             return this.usecase.Product.FindProductList(ts, req.body.params, login)
-        }, this.log, this.db, {req: req, res: res})
+        }, this.log, this.sessionManager, {req: req, res: res})
     }
 }

@@ -6,6 +6,7 @@ import { Request, Response } from 'express';
 import { ApiMiddleware } from './middleware/index.js';
 import { handleApiRequest } from '../../../tools/api-request-handler/index.js';
 import { Logger } from '../../../tools/logger/index.js';
+import { SessionManager } from '../../../cmd/init/session_manager/index.js';
 
 
 export class StockHandler implements DefaultApiHandler {
@@ -14,18 +15,22 @@ export class StockHandler implements DefaultApiHandler {
     private usecase: Usecase;
     private middleware: ApiMiddleware;
     private log: Logger;
+    private sessionManager: SessionManager;
     
     constructor(params:{
         app: express.Express, 
         db: pgPromise.IDatabase<object>,
         ui: Usecase, 
-        middleware: ApiMiddleware
+        middleware: ApiMiddleware,
+        sessionManager: SessionManager;
     }){
         this.app = params.app;
         this.db = params.db;
         this.usecase = params.ui;
         this.middleware = params.middleware;
         this.log = new Logger("stock-external")
+
+        this.sessionManager = params.sessionManager
     }
 
     public Init(){
@@ -38,8 +43,11 @@ export class StockHandler implements DefaultApiHandler {
 
     private async loadStocks(req: Request, res: Response) {
         const { empl_id, ar_id } = req.user
-        handleApiRequest((ts) => {
-            return this.usecase.Stock.FindStockListByEmployeeID(ts, empl_id)
-        }, this.log, this.db, {req: req, res: res})
+        handleApiRequest((sm) => {
+            return this.usecase.Stock.FindStockListByEmployeeID(sm, empl_id)
+        }, this.log, this.sessionManager, {req: req, res: res})
+        // handleApiRequest((ts) => {
+        //     return this.usecase.Stock.FindStockListByEmployeeID(ts, empl_id)
+        // }, this.log, this.db, {req: req, res: res})
     }
 }

@@ -6,6 +6,7 @@ import { Usecase } from "../../internal/usecase/index.js";
 import { ApiMiddleware } from "./core/middleware/index.js";
 import { StockHandler } from './core/stock.js';
 import { DefaultApiHandler } from '../../internal/entity/rest/entity/index.js';
+import { SessionManager } from '../../cmd/init/session_manager/index.js';
 
 
 
@@ -17,6 +18,7 @@ export class ApiHandler {
         db: pgPromise.IDatabase<object>; 
         ui: Usecase; 
         middleware: ApiMiddleware;
+        sessionManager: SessionManager;
     }){
         this.handlers = [
             new ProductHandler(params),

@@ -1,3 +1,4 @@
+import pg from "pg";
 import pgPromise from "pg-promise";
 import { Repository } from "../../repository/index.js";
 import { AuthParams } from "../../entity/employee/params/index.js"; 
@@ -11,8 +12,8 @@ import { translitLowercaseRuToEn } from "../../../tools/translit/index.js"
 
 
 interface EmployeeUsecaseInter {
-    CreateEmployee(ts: pgPromise.ITask<object>, p: Employee): Promise<EmployeeAuthResult | Error>;
-    Auth(ts: pgPromise.ITask<object>, p: AuthParams): Promise<EmployeeAuthResult | Error>;
+    CreateEmployee(ts: pg.PoolClient, p: Employee): Promise<EmployeeAuthResult | Error>;
+    Auth(ts: pg.PoolClient, p: AuthParams): Promise<EmployeeAuthResult | Error>;
 }
 
 export class EmployeeUsecase implements EmployeeUsecaseInter {
@@ -25,7 +26,7 @@ export class EmployeeUsecase implements EmployeeUsecaseInter {
     }
 
     // CreateEmployee создать работника
-    public async CreateEmployee(ts: pgPromise.ITask<object>, p: Employee): Promise<EmployeeAuthResult> {
+    public async CreateEmployee(ts: pg.PoolClient, p: Employee): Promise<EmployeeAuthResult> {
         p.password = createHashPassword(p.password)
         p.login = this.createLogin(p.fio)
 
@@ -43,7 +44,7 @@ export class EmployeeUsecase implements EmployeeUsecaseInter {
     }
 
     // Auth авторизация
-    public async Auth(ts: pgPromise.ITask<object>, p: AuthParams): Promise<EmployeeAuthResult> {        
+    public async Auth(ts: pg.PoolClient, p: AuthParams): Promise<EmployeeAuthResult> {        
         const lf: LoggerFields = {
             "auth_login": p.login
         } 

@@ -37,7 +37,7 @@ export class ApiMiddleware {
 
     public IsAuthorized(req: Request, res: Response, next: NextFunction, callNext: boolean = true): void {        
         try {
-            const decoded = this.decodeToken(req)
+            const decoded = this.decodeToken(req)            
             req.user = {
                 empl_id: decoded.empl_id,
                 ar_id: decoded.ar_id,
@@ -48,6 +48,7 @@ export class ApiMiddleware {
                 res.statusCode = 200
                 res.json({message: "authorized"})
             }
+
             return next()   
         } catch(err: any) {
             responseServerError(res, err, this.log)
@@ -77,7 +78,7 @@ export class ApiMiddleware {
         if (token) {
             try {
                 return jwt.verify(token, this.token_key)
-            } catch (err: any) {
+            } catch (err: any) {      
                 const { TokenExpiredError } = jwt
                 if (err instanceof TokenExpiredError) {
                     throw MiddleWareErrorsMap.JwtExpired
@@ -85,5 +86,6 @@ export class ApiMiddleware {
                 throw err
             }
         }
+        throw new Error('Пошел нахуй мудак')
     }
 }

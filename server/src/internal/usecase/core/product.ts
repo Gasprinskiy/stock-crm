@@ -1,4 +1,5 @@
 import { InternalErrorsMap } from '../../entity/global/error/index.js';
+import pg from "pg";
 import pgPromise from "pg-promise";
 import { Repository } from "../../repository/index.js";
 import { Logger, LoggerFields } from "../../../tools/logger/index.js"
@@ -8,9 +9,9 @@ import { handleRepoDefaultError } from "../../../tools/usecase-err-handler/index
 import { DistributionStockID } from '../../entity/stock/constant/index.js';
 
 interface ProdcuctUsecaseInter {
-    GetProductByID(ts: pgPromise.ITask<object>, id: number): Promise<Product>;
-    CreateProduct(ts: pgPromise.ITask<object>, p: CreateProductParam): Promise<number>;
-    FindProductList(ts: pgPromise.ITask<object>, p: FindProductListParam, employee_login: string): Promise<ProductListResponse>;
+    GetProductByID(ts: pg.PoolClient, id: number): Promise<Product>;
+    CreateProduct(ts: pg.PoolClient, p: CreateProductParam): Promise<number>;
+    FindProductList(ts: pg.PoolClient, p: FindProductListParam, employee_login: string): Promise<ProductListResponse>;
 }
 
 export class ProductUsecase implements ProdcuctUsecaseInter {
@@ -22,13 +23,13 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
         this.log = new Logger("product")
     }
 
-    public async GetProductByID(ts: pgPromise.ITask<object>, id: number): Promise<Product> {
+    public async GetProductByID(ts: pg.PoolClient, id: number): Promise<Product> {
         return handleRepoDefaultError(() => {
             return this.repository.Product.GetProductByID(ts, id)
         }, this.log, "не удалось получить продукт по ID")
     }
 
-    public async CreateProduct(ts: pgPromise.ITask<object>, p: CreateProductParam): Promise<number> {
+    public async CreateProduct(ts: pg.PoolClient, p: CreateProductParam): Promise<number> {
         try {
             const productID = await this.repository.Product.CreateProduct(ts, p)
 
@@ -63,7 +64,7 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
     }
     
     // FindProductList поиск товаров
-    public async FindProductList(ts: pgPromise.ITask<object>, p: FindProductListParam, employee_login: string): Promise<ProductListResponse> {
+    public async FindProductList(ts: pg.PoolClient, p: FindProductListParam, employee_login: string): Promise<ProductListResponse> {
         const lf: LoggerFields = {
             "employee_login": employee_login
         }
@@ -84,7 +85,7 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
 
                     return {
                         product_list: productResponse,
-                        page_count: Math.ceil(pageCountResponse.count / p.limit)
+                        page_count: Math.ceil(pageCountResponse / p.limit)
                     }
                     
                 } catch(err: any) {
