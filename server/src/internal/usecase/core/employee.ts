@@ -7,7 +7,7 @@ import { InternalErrorsMap } from "../../entity/global/error/index.js";
 import { EmployeeErrorsMap } from "../../entity/employee/error/index.js";
 import { Logger, LoggerFields } from '../../../tools/logger/index.js';
 import { createHashPassword, checkHashPassword } from "../../../tools/passhash/index.js";
-import { handleRepoDefaultError } from "../../../tools/usecase-err-handler/index.js";
+import { handleRepoDefaultError } from "../../../tools/usecase-generic/index.js";
 import { translitLowercaseRuToEn } from "../../../tools/translit/index.js"
 
 

@@ -1,5 +1,5 @@
 import pg from "pg";
-import { select } from "../../../tools/pg-err-handler/index.js";
+import { select } from "../../../tools/repository-generic/index.js";
 import { Stock } from "../../entity/stock/entity/entity.js";
 
 export interface StockRepoInter {

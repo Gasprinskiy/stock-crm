@@ -15,7 +15,7 @@ export class ApiHandler {
     
     constructor(params: { 
         app: express.Express; 
-        db: pgPromise.IDatabase<object>; 
+        // db: pgPromise.IDatabase<object>; 
         ui: Usecase; 
         middleware: ApiMiddleware;
         sessionManager: SessionManager;

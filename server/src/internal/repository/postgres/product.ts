@@ -2,7 +2,7 @@ import pgPromise from "pg-promise";
 import pg from "pg";
 import { Product } from "../../entity/product/entity/index.js";
 import { AddProductToStockParam, CreateProductParam, FindProductListParam, ProductPriceRange } from "../../entity/product/params/index.js"
-import { selectOne, selectMany, exec, get, execReturnID, select } from "../../../tools/pg-err-handler/index.js";
+import { exec, get, execReturnID, select } from "../../../tools/repository-generic/index.js";
 import { CountResponse } from "../../entity/global/entity/index.js";
 
 export interface ProductRepoInter {

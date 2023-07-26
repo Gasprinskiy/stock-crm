@@ -1,17 +1,16 @@
 import express from 'express';
-import pgPromise from "pg-promise";
 import { DefaultApiHandler } from '../../../internal/entity/rest/entity/index.js';
 import { Usecase } from "../../../internal/usecase/index.js";
 import { Request, Response } from 'express';
 import { ApiMiddleware } from './middleware/index.js';
-import { handleApiRequest } from '../../../tools/api-request-handler/index.js';
+import { handleApiRequest } from '../../../tools/external-generic/index.js';
 import { Logger } from '../../../tools/logger/index.js';
 import { SessionManager } from '../../../cmd/init/session_manager/index.js';
 
 
 export class StockHandler implements DefaultApiHandler {
     private app: express.Express;
-    private db: pgPromise.IDatabase<object>;
+    // private db: pgPromise.IDatabase<object>;
     private usecase: Usecase;
     private middleware: ApiMiddleware;
     private log: Logger;
@@ -19,13 +18,13 @@ export class StockHandler implements DefaultApiHandler {
     
     constructor(params:{
         app: express.Express, 
-        db: pgPromise.IDatabase<object>,
+        // db: pgPromise.IDatabase<object>,
         ui: Usecase, 
         middleware: ApiMiddleware,
         sessionManager: SessionManager;
     }){
         this.app = params.app;
-        this.db = params.db;
+        // this.db = params.db;
         this.usecase = params.ui;
         this.middleware = params.middleware;
         this.log = new Logger("stock-external")

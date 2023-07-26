@@ -19,25 +19,7 @@ export class PostgresDBase {
         })
     }
 
-    // ConnectToDb Подключение к базе postgress возвращение экземпляпа DB
-    public async Connect(): Promise<pgPromise.IDatabase<object>> {
-        this.log.Info("Connecting to postgres...");
-    
-        const db = this.pgpApp(this.connectionString)
-        
-        await db.connect()
-        .then(() => {
-            this.log.Info("Connection to postgres was successful");
-        })
-        .catch((err: Error) => {
-            this.log.Error(err, 'Error while connecting to postgres',)
-            process.exit(1)
-        })
-
-        return db
-    }
-
-    public async ConnectToClient(): Promise<pg.PoolClient> {
+    public async Connect(): Promise<pg.PoolClient> {
         this.log.Info("Connecting to postgres...");
 
         try {

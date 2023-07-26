@@ -1,6 +1,6 @@
 import pg from "pg";
 import { Employee, EmployeeAuthResult } from '../../entity/employee/entity/index.js';
-import { get, exec } from "../../../tools/pg-err-handler/index.js";
+import { get, exec } from "../../../tools/repository-generic/index.js";
 
 export interface EmployeeRepoInter {
     CreateEmployee(ts: pg.PoolClient, p: Employee): Promise<EmployeeAuthResult>;

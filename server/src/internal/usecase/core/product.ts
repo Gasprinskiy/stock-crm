@@ -5,7 +5,7 @@ import { Repository } from "../../repository/index.js";
 import { Logger, LoggerFields } from "../../../tools/logger/index.js"
 import { Product, ProductListResponse } from '../../entity/product/entity/index.js';
 import { CreateProductParam, FindProductListParam } from "../../entity/product/params/index.js"
-import { handleRepoDefaultError } from "../../../tools/usecase-err-handler/index.js";
+import { handleRepoDefaultError } from "../../../tools/usecase-generic/index.js";
 import { DistributionStockID } from '../../entity/stock/constant/index.js';
 
 interface ProdcuctUsecaseInter {
