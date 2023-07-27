@@ -47,11 +47,9 @@ export class Logger implements LoggerInter {
     }
 
     public WithFields(fields: LoggerFields): this {
-        this.optinalFileds = ""
-        console.log("fileds", fields);
-        
+        this.optinalFileds = ""        
         Object.keys(fields).forEach(key => {
-            this.optinalFileds += `${key}: ${fields[key]} `
+            this.optinalFileds += `'${key}'='${fields[key]}' `
         })
         
         return this
@@ -87,7 +85,7 @@ export class Logger implements LoggerInter {
     }
 
     private logWithPrefix(message: string) {
-        return `[${this.Prefix}] ${message} ${this.optinalFileds}`
+        return `[${this.Prefix}] ${message}; ${this.optinalFileds}`
     }
 
     private errorLogWithPrefix(message: string, stack?: string, optionalText?: string) : string {
