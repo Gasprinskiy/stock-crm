@@ -35,15 +35,9 @@ export class ApiMiddleware {
         }
     }
 
-    public IsAuthorized(req: Request, res: Response, next: NextFunction, callNext: boolean = true): void {        
+    public async IsAuthorized(req: Request, res: Response, next: NextFunction, callNext: boolean = true): Promise<void> {        
         try {
-            const decoded = this.decodeToken(req)            
-            req.user = {
-                empl_id: decoded.empl_id,
-                ar_id: decoded.ar_id,
-                login: decoded.login
-            }
-            
+            await this.decodeToken(req)            
             if (!callNext) {
                 res.statusCode = 200
                 res.json({message: "authorized"})
@@ -61,9 +55,9 @@ export class ApiMiddleware {
         } 
     }
 
-    private checkAccessRight(req: Request, res: Response, next: NextFunction, ...ableAccessRights: AccessRight[]) : void {  
+    private async checkAccessRight(req: Request, res: Response, next: NextFunction, ...ableAccessRights: AccessRight[]) : Promise<void> {  
         try {
-            const decodedToked = this.decodeToken(req)
+            const decodedToked = await this.decodeToken(req)
             if (!ableAccessRights.includes(decodedToked?.ar_id)) {
                 throw InternalErrorsMap.ErrNoAccesRight
             }
@@ -73,11 +67,22 @@ export class ApiMiddleware {
         }
     }
 
-    private decodeToken(req: Request): any {
+    private async decodeToken(req: Request): Promise<any> {
         const token = req.cookies.token 
         if (token) {
             try {
-                return jwt.verify(token, this.token_key)
+                return jwt.verify(token, this.token_key, (err: any, decoded: any) => {
+                    if (err) {
+                        throw err
+                    }
+                    req.user = {
+                        empl_id: decoded.empl_id,
+                        ar_id: decoded.ar_id,
+                        login: decoded.login,
+                    }
+
+                    return decoded
+                })
             } catch (err: any) {      
                 const { TokenExpiredError } = jwt
                 if (err instanceof TokenExpiredError) {
