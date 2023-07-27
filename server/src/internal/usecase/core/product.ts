@@ -108,15 +108,19 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
     public async SendProductsToStockRecieve(ts: pg.PoolClient, p: ProductMovementParam, employee_login: string): Promise<void> {
         const lf: LoggerFields = {
             "employee_login": employee_login,
+            "accounting_id": p.accounting_id,
+            "sending_stock_id": p.sending_stock_id,
+            "receiving_stock_id": p.receiving_stock_id,
+            "amount": p.amount
         }
-
         try {
             await this.repository.Product.SendProductsToStockRecieve(ts, p);
             await this.repository.Product.ReduceProductStockAmount(ts, p.amount, p.accounting_id);
 
-            this.log.WithFields(lf).Info(`продукт c ID #${p.product_id} был отправлен со склада `)
+            this.log.WithFields(lf).Info("совершено отправка продукта со склада на склад")
         } catch(err: any) {
-
+            this.log.WithFields(lf).Error(err, "не удалось отправить продукта со склада на склад")
+            throw err
         }
     }
 }

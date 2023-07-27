@@ -12,7 +12,7 @@ export interface ProductRepoInter {
     AddProductToStock(ts: pg.PoolClient, params: AddProductToStockParam): Promise<number>;
     FindProductListByStockID(ts: pg.PoolClient, p: FindProductListParam, stockID: number): Promise<Product[]>;
     FindProductCount(ts: pg.PoolClient, p: FindProductListParam, stockID: number): Promise<number>;
-    SendProductsToStockRecieve(ts: pg.PoolClient, p: ProductMovementParam): Promise<number>;
+    SendProductsToStockRecieve(ts: pg.PoolClient, p: ProductMovementParam): Promise<void>;
     ReduceProductStockAmount(ts: pg.PoolClient, amount: number, accounting_id: number): Promise<void>
     // LoadPriceRange(ts: pgPromise.ITask<object>): Promise<ProductPriceRange>
 }
@@ -81,12 +81,23 @@ export class ProductRepository implements ProductRepoInter {
         return get(ts, sqlQuery)
     }
 
-    public async SendProductsToStockRecieve(ts: pg.PoolClient, p: ProductMovementParam): Promise<number> {
-        return 0
+    public async SendProductsToStockRecieve(ts: pg.PoolClient, p: ProductMovementParam): Promise<void> {
+        const sqlQuery = `
+        INSERT INTO product$stock_movements(accounting_id, sending_stock_id, receiving_stock_id, amount)
+        VALUES('${p.accounting_id}', '${p.sending_stock_id}', '${p.receiving_stock_id}', '${p.amount}')` 
+
+        return exec(ts, sqlQuery)
     }
 
     public async ReduceProductStockAmount(ts: pg.PoolClient, amount: number, accounting_id: number): Promise<void> {
-        
+        const sqlQuery = `
+        UPDATE 
+            product$stocks 
+        SET 
+            amount = (amount - $1) 
+        WHERE accounting_id = $2`
+
+        return exec(ts, sqlQuery, false, [amount, accounting_id])
     }
 
     private findProductListFilterQuery(p: FindProductListParam, stockID: number): string {
