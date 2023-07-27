@@ -435,7 +435,6 @@ CREATE TABLE public."product$variations" (
     v_type_id integer NOT NULL
 );
 
-
 ALTER TABLE public."product$variations" OWNER TO test_db;
 
 --
@@ -462,6 +461,17 @@ ALTER SEQUENCE public."product$variations_variation_id_seq" OWNED BY public."pro
 
 --
 -- Name: product_product_id_seq; Type: SEQUENCE; Schema: public; Owner: test_db
+
+CREATE TABLE public."product$stock_movements" (
+    mvmnt_id INTEGER NOT NULL,
+    accounting_id INTEGER NOT NULL,
+    stock_id INTEGER NOT NULL,
+    PRIMARY KEY (mvmnt_id),
+    CONSTRAINT productstockmovements_fk1 FOREIGN KEY (accounting_id) REFERENCES
+    public."product$stocks" ("accounting_id"),
+    CONSTRAINT productstockmovements_fk2 FOREIGN KEY (stock_id) REFERENCES
+    public."stocks" ("stock_id")
+);
 --
 
 CREATE SEQUENCE public.product_product_id_seq
