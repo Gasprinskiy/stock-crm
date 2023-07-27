@@ -4,7 +4,7 @@ import pgPromise from "pg-promise";
 import { Repository } from "../../repository/index.js";
 import { Logger, LoggerFields } from "../../../tools/logger/index.js"
 import { Product, ProductListResponse } from '../../entity/product/entity/index.js';
-import { CreateProductParam, FindProductListParam } from "../../entity/product/params/index.js"
+import { CreateProductParam, FindProductListParam, ProductMovementParam } from "../../entity/product/params/index.js"
 import { handleRepoDefaultError } from "../../../tools/usecase-generic/index.js";
 import { DistributionStockID } from '../../entity/stock/constant/index.js';
 
@@ -12,6 +12,7 @@ interface ProdcuctUsecaseInter {
     GetProductByID(ts: pg.PoolClient, id: number): Promise<Product>;
     CreateProduct(ts: pg.PoolClient, p: CreateProductParam, employee_login: string): Promise<number>;
     FindProductList(ts: pg.PoolClient, p: FindProductListParam, employee_login: string): Promise<ProductListResponse>;
+    SendProductsToStockRecieve(ts: pg.PoolClient, p: ProductMovementParam, employee_login: string): Promise<void>;
 }
 
 export class ProductUsecase implements ProdcuctUsecaseInter {
@@ -101,6 +102,21 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
         } catch(err: any) {
             this.log.WithFields(lf).Error(err, 'не удалось найти сотрудника по логину')
             throw InternalErrorsMap.ErrInternalError
+        }
+    }
+
+    public async SendProductsToStockRecieve(ts: pg.PoolClient, p: ProductMovementParam, employee_login: string): Promise<void> {
+        const lf: LoggerFields = {
+            "employee_login": employee_login,
+        }
+
+        try {
+            await this.repository.Product.SendProductsToStockRecieve(ts, p);
+            await this.repository.Product.ReduceProductStockAmount(ts, p.amount);
+
+            this.log.WithFields(lf).Info(`продукт c ID #${p.product_id} был отправлен со склада `)
+        } catch(err: any) {
+
         }
     }
 }

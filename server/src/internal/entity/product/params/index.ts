@@ -25,3 +25,11 @@ export interface AddProductToStockParam {
     stock_id: number;
     amount: number;
 }
+
+export interface ProductMovementParam {
+    product_id: number;
+    accounting_id: number;
+    sending_stock_id: number;
+    receiving_stock_id: number;
+    amount: number;
+}
