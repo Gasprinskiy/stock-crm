@@ -53,6 +53,15 @@ export class ProductHandler implements DefaultApiHandler {
             this.middleware.IsAuthorized.bind(this.middleware),
             this.findProductList.bind(this)
         )
+
+        this.app.post(
+            '/product_move',
+            this.middleware.CheckAccessRight(
+                AccessRight.full_access, 
+                AccessRight.distributor,
+            ).bind(this.middleware),
+            this.sendProductsToStockRecieve.bind(this)
+        )
     }
 
     private async getProductByID(req: Request, res: Response) {
@@ -70,6 +79,12 @@ export class ProductHandler implements DefaultApiHandler {
     private async findProductList(req: Request, res: Response) {
         handleApiRequest((ts) => {
             return this.usecase.Product.FindProductList(ts, req.body.params, req.user.login)
+        }, this.log, this.sessionManager, {req: req, res: res})
+    }
+
+    private sendProductsToStockRecieve(req: Request, res: Response) {
+        handleApiRequest((ts) => {
+            return this.usecase.Product.SendProductsToStockRecieve(ts, req.body.params, req.user.login)
         }, this.log, this.sessionManager, {req: req, res: res})
     }
 }
