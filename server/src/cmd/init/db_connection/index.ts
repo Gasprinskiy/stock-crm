@@ -1,17 +1,12 @@
-
 import pg from "pg";
 import { Logger } from "../../../tools/logger/index.js";
 
 export class PostgresDBase {
-    private pgpApp: pgPromise.IMain<object>;
-    private connectionString: string;
     private log: Logger;
     // new client
     private client: pg.Pool;
 
     constructor(connectionString: string) {
-        this.pgpApp = pgPromise();
-        this.connectionString = connectionString;
         this.log = new Logger("postgress-connection");
 
         this.client = new pg.Pool({
