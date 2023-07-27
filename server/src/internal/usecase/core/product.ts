@@ -10,7 +10,7 @@ import { DistributionStockID } from '../../entity/stock/constant/index.js';
 
 interface ProdcuctUsecaseInter {
     GetProductByID(ts: pg.PoolClient, id: number): Promise<Product>;
-    CreateProduct(ts: pg.PoolClient, p: CreateProductParam): Promise<number>;
+    CreateProduct(ts: pg.PoolClient, p: CreateProductParam, employee_login: string): Promise<number>;
     FindProductList(ts: pg.PoolClient, p: FindProductListParam, employee_login: string): Promise<ProductListResponse>;
 }
 
@@ -29,36 +29,35 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
         }, this.log, "не удалось получить продукт по ID")
     }
 
-    public async CreateProduct(ts: pg.PoolClient, p: CreateProductParam): Promise<number> {
+    public async CreateProduct(ts: pg.PoolClient, p: CreateProductParam, employee_login: string): Promise<number> {
+        const lf: LoggerFields = {
+            "employee_login": employee_login
+        }
         try {
             const productID = await this.repository.Product.CreateProduct(ts, p)
 
-            p.v_type_list.forEach(async v_type => {
-                try {
-                    const variationID = await this.repository.Product.CreateProductVariation(ts, productID, v_type.id)
-                    
-                    try {
-                        // все создаваемые продукты в первую очередь попадают в склад распределния
-                        await this.repository.Product.AddProductToStock(ts, {
-                            stock_id: DistributionStockID,
-                            product_id: productID,
-                            amount: v_type.amount,
-                            variation_id: variationID,
-                        })
-                    } catch(err: any) {
-                        this.log.Error(err, 'не добавить продукт на склад распределения')
-                        throw InternalErrorsMap.ErrInternalError
-                    }
-
-                } catch(err: any) {
-                    this.log.Error(err, 'не создать вариацию продукта')
-                    throw InternalErrorsMap.ErrInternalError
+            try {
+                for (let i in p.v_type_list) {
+                    const v_type = p.v_type_list[i]
+                    const variationIDResponse = await this.repository.Product.CreateProductVariation(ts, productID, v_type.id)
+                    await this.repository.Product.AddProductToStock(ts, {
+                        stock_id: DistributionStockID,
+                        product_id: productID,
+                        amount: v_type.amount,
+                        variation_id: variationIDResponse,
+                    })
                 }
-            })
+            } catch(err: any) {
+                this.log.WithFields(lf).Error(err, "не удалось создать вариацию продукта или добавить его в склад")
+                throw InternalErrorsMap.ErrInternalError
+            }
 
+            this.log.WithFields(lf).Info(`продукт ${p.product_name} создан, и добавлен на склад распределния`)
             return productID
         } catch(err: any) {
-            this.log.Error(err, 'не удалось создать продукт')
+            if (err !== InternalErrorsMap.ErrInternalError) {
+                this.log.WithFields(lf).Error(err, 'не удалось создать продукт')
+            }
             throw InternalErrorsMap.ErrInternalError
         }
     }

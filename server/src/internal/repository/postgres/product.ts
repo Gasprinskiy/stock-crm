@@ -9,7 +9,7 @@ export interface ProductRepoInter {
     GetProductByID(ts: pg.PoolClient, id: number): Promise<Product>;
     CreateProduct(ts: pg.PoolClient, p: CreateProductParam): Promise<number>;
     CreateProductVariation(ts: pg.PoolClient, product_id: number, v_type_id: number): Promise<number>;
-    AddProductToStock(ts: pg.PoolClient, params: AddProductToStockParam): Promise<void>;
+    AddProductToStock(ts: pg.PoolClient, params: AddProductToStockParam): Promise<number>;
     FindProductListByStockID(ts: pg.PoolClient, p: FindProductListParam, stockID: number): Promise<Product[]>;
     FindProductCount(ts: pg.PoolClient,  p: FindProductListParam, stockID: number): Promise<number>;
     // LoadPriceRange(ts: pgPromise.ITask<object>): Promise<ProductPriceRange>
@@ -44,12 +44,13 @@ export class ProductRepository implements ProductRepoInter {
         return execReturnID(ts, sqlQuery, 'variation_id')
     }
     
-    public async AddProductToStock(ts: pg.PoolClient, params: AddProductToStockParam): Promise<void> {
+    public async AddProductToStock(ts: pg.PoolClient, params: AddProductToStockParam): Promise<number> {
         const sqlQuery = `
         INSERT INTO product$stocks(stock_id, product_id, amount, variation_id)
-        VALUES ('${params.stock_id}', '${params.product_id}', '${params.amount}', '${params.variation_id}')`
+        VALUES ('${params.stock_id}', '${params.product_id}', '${params.amount}', '${params.variation_id}')
+        RETURNING accounting_id`
 
-        return exec(ts, sqlQuery)
+        return execReturnID(ts, sqlQuery, 'accounting_id')
     }
 
     public async FindProductListByStockID(ts: pg.PoolClient, p: FindProductListParam, stockID: number): Promise<Product[]> {
