@@ -1,5 +1,5 @@
 import express from 'express';
-import pgPromise from "pg-promise";
+
 import { ProductHandler } from './core/product.js'
 import { EmployeeHandler } from "./core/employee.js";
 import { Usecase } from "../../internal/usecase/index.js";

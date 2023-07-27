@@ -1,5 +1,5 @@
 import pg from "pg";
-import pgPromise from "pg-promise";
+
 import { Repository } from "../../repository/index.js";
 import { AuthParams } from "../../entity/employee/params/index.js"; 
 import { Employee, EmployeeAuthResult } from "../../entity/employee/entity/index.js";

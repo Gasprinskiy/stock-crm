@@ -1,4 +1,4 @@
-import pgPromise from "pg-promise";
+
 import pg from "pg";
 import { Product } from "../../entity/product/entity/index.js";
 import { AddProductToStockParam, CreateProductParam, FindProductListParam, ProductMovementParam, ProductPriceRange } from "../../entity/product/params/index.js"
@@ -13,7 +13,7 @@ export interface ProductRepoInter {
     FindProductListByStockID(ts: pg.PoolClient, p: FindProductListParam, stockID: number): Promise<Product[]>;
     FindProductCount(ts: pg.PoolClient, p: FindProductListParam, stockID: number): Promise<number>;
     SendProductsToStockRecieve(ts: pg.PoolClient, p: ProductMovementParam): Promise<number>;
-    ReduceProductStockAmount(ts: pg.PoolClient, amount: number): Promise<void>
+    ReduceProductStockAmount(ts: pg.PoolClient, amount: number, accounting_id: number): Promise<void>
     // LoadPriceRange(ts: pgPromise.ITask<object>): Promise<ProductPriceRange>
 }
 
@@ -85,7 +85,7 @@ export class ProductRepository implements ProductRepoInter {
         return 0
     }
 
-    public async ReduceProductStockAmount(ts: pg.PoolClient, amount: number): Promise<void> {
+    public async ReduceProductStockAmount(ts: pg.PoolClient, amount: number, accounting_id: number): Promise<void> {
         
     }
 

@@ -1,6 +1,6 @@
 import { InternalErrorsMap } from '../../entity/global/error/index.js';
 import pg from "pg";
-import pgPromise from "pg-promise";
+
 import { Repository } from "../../repository/index.js";
 import { Logger, LoggerFields } from "../../../tools/logger/index.js"
 import { Product, ProductListResponse } from '../../entity/product/entity/index.js';
@@ -112,7 +112,7 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
 
         try {
             await this.repository.Product.SendProductsToStockRecieve(ts, p);
-            await this.repository.Product.ReduceProductStockAmount(ts, p.amount);
+            await this.repository.Product.ReduceProductStockAmount(ts, p.amount, p.accounting_id);
 
             this.log.WithFields(lf).Info(`продукт c ID #${p.product_id} был отправлен со склада `)
         } catch(err: any) {

@@ -1,7 +1,7 @@
 import express from 'express';
 import { Usecase } from './../../../internal/usecase/index.js';
 import { DefaultApiHandler } from '../../../internal/entity/rest/entity/index.js';
-import pgPromise from "pg-promise";
+
 import { Request, Response } from 'express-serve-static-core';
 import { ApiMiddleware } from './middleware/index.js';
 import { handleApiRequest } from '../../../tools/external-generic/index.js';

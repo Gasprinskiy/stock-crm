@@ -1,4 +1,4 @@
-import pgPromise from "pg-promise";
+
 import pg from "pg";
 import { Logger } from "../../../tools/logger/index.js";
 
