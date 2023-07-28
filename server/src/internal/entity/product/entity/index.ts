@@ -16,3 +16,13 @@ export interface ProductVariation {
     product_id: number;
     v_type_id: number;
 }
+
+export interface ProductMovement {
+    product_name: string;
+    variation_type: number;
+    unit_type: string;
+    sending_stock: string;
+    receiving_stock: string;
+    amount: number;
+    received: boolean;
+}

@@ -49,7 +49,7 @@ export class Logger implements LoggerInter {
     public WithFields(fields: LoggerFields): this {
         this.optinalFileds = ""        
         Object.keys(fields).forEach(key => {
-            this.optinalFileds += `'${key}'='${fields[key]}' `
+            this.optinalFileds += `${key}=${fields[key]} `
         })
         
         return this

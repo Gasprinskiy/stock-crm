@@ -62,6 +62,15 @@ export class ProductHandler implements DefaultApiHandler {
             ).bind(this.middleware),
             this.sendProductsToStockRecieve.bind(this)
         )
+
+        this.app.post(
+            '/product_movement_history',
+            this.middleware.CheckAccessRight(
+                AccessRight.full_access,
+                AccessRight.distributor,
+            ).bind(this.middleware),
+            this.loadProductMovemntHistory.bind(this)
+        )
     }
 
     private async getProductByID(req: Request, res: Response) {
@@ -86,5 +95,11 @@ export class ProductHandler implements DefaultApiHandler {
         handleApiRequest((ts) => {
             return this.usecase.Product.SendProductsToStockRecieve(ts, req.body.params, req.user.login)
         }, this.log, this.sessionManager, {req: req, res: res})
+    }
+
+    private loadProductMovemntHistory(req: Request, res: Response) {
+        handleApiRequest((ts) => {
+            return this.usecase.Product.LoadProductMovemetnHistory(ts)
+        }, this.log, this.sessionManager, {req, res})
     }
 }

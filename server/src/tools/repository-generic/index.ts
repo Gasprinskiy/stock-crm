@@ -27,7 +27,7 @@ export const get = async <T>(ts: pg.PoolClient, query: string, args?: any[]) : P
     }
 }
 
-export const exec = async <T>(ts: pg.PoolClient, query: string, returnResult: boolean = false, args?: any[]) : Promise<T|any> => {
+export const insert = async <T>(ts: pg.PoolClient, query: string, returnResult: boolean = false, args?: any[]) : Promise<T|any> => {
     try {
         const response = await ts.query(query, args)
         if (returnResult) {
@@ -38,7 +38,7 @@ export const exec = async <T>(ts: pg.PoolClient, query: string, returnResult: bo
     }
 }
 
-export const execReturnID = async (ts: pg.PoolClient, query: string, returnKey: keyof pg.QueryResultRow, args?: any[]) : Promise<number> => {
+export const insertReturnID = async (ts: pg.PoolClient, query: string, returnKey: keyof pg.QueryResultRow, args?: any[]) : Promise<number> => {
     try {
         const response = await ts.query(query, args)
         return response.rows[0][returnKey]

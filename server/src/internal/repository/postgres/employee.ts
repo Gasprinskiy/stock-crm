@@ -1,6 +1,6 @@
 import pg from "pg";
 import { Employee, EmployeeAuthResult } from '../../entity/employee/entity/index.js';
-import { get, exec } from "../../../tools/repository-generic/index.js";
+import { get, insert } from "../../../tools/repository-generic/index.js";
 
 export interface EmployeeRepoInter {
     CreateEmployee(ts: pg.PoolClient, p: Employee): Promise<EmployeeAuthResult>;
@@ -14,7 +14,7 @@ export class EmployeeRepo implements EmployeeRepoInter {
         VALUES (${p.ar_id}, ${p.stock_id}, '${p.fio}', '${p.login}', '${p.password}')
         RETURNING empl_id, ar_id, login`
 
-        return exec(ts, sqlQuery, true)
+        return insert(ts, sqlQuery, true)
     }
     public async GetEmployeeByLogin(ts: pg.PoolClient, login: string): Promise<Employee> {
         const sqlQuery = `

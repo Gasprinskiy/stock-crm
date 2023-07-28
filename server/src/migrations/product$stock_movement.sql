@@ -35,4 +35,6 @@ ALTER TABLE
 ALTER TABLE
     public."product$stock_movements" ALTER COLUMN recevied SET NOT NULL;
 ALTER TABLE
-    public."product$stock_movements" ALTER COLUMN recevied SET DEFAULT false
+    public."product$stock_movements" ALTER COLUMN recevied SET DEFAULT false;
+ALTER TABLE
+    "test_db"."public"."product$stock_movements" DROP COLUMN "sending_stock_id";

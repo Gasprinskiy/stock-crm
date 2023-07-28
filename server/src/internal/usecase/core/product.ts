@@ -3,7 +3,7 @@ import pg from "pg";
 
 import { Repository } from "../../repository/index.js";
 import { Logger, LoggerFields } from "../../../tools/logger/index.js"
-import { Product, ProductListResponse } from '../../entity/product/entity/index.js';
+import { Product, ProductListResponse, ProductMovement } from '../../entity/product/entity/index.js';
 import { CreateProductParam, FindProductListParam, ProductMovementParam } from "../../entity/product/params/index.js"
 import { handleRepoDefaultError } from "../../../tools/usecase-generic/index.js";
 import { DistributionStockID } from '../../entity/stock/constant/index.js';
@@ -13,6 +13,7 @@ interface ProdcuctUsecaseInter {
     CreateProduct(ts: pg.PoolClient, p: CreateProductParam, employee_login: string): Promise<number>;
     FindProductList(ts: pg.PoolClient, p: FindProductListParam, employee_login: string): Promise<ProductListResponse>;
     SendProductsToStockRecieve(ts: pg.PoolClient, p: ProductMovementParam, employee_login: string): Promise<void>;
+    LoadProductMovemetnHistory(ts: pg.PoolClient) : Promise<ProductMovement[]>;
 }
 
 export class ProductUsecase implements ProdcuctUsecaseInter {
@@ -115,12 +116,18 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
         }
         try {
             await this.repository.Product.SendProductsToStockRecieve(ts, p);
-            await this.repository.Product.ReduceProductStockAmount(ts, p.amount, p.accounting_id);
+            await this.repository.Product.DecreaseProductStockAmount(ts, p.amount, p.accounting_id);
 
             this.log.WithFields(lf).Info("совершено отправка продукта со склада на склад")
         } catch(err: any) {
             this.log.WithFields(lf).Error(err, "не удалось отправить продукта со склада на склад")
             throw err
         }
+    }
+
+    public async LoadProductMovemetnHistory(ts: pg.PoolClient) : Promise<ProductMovement[]> {
+        return handleRepoDefaultError(() => {
+            return this.repository.Product.LoadProductMovemetnHistory(ts)
+        }, this.log, "не удалось загрузить историю перемещений продукта")
     }
 }
