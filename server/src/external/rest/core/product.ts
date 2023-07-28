@@ -63,13 +63,13 @@ export class ProductHandler implements DefaultApiHandler {
             this.sendProductsToStockRecieve.bind(this)
         )
 
-        this.app.post(
+        this.app.get(
             '/product_movement_history',
             this.middleware.CheckAccessRight(
                 AccessRight.full_access,
                 AccessRight.distributor,
             ).bind(this.middleware),
-            this.loadProductMovemntHistory.bind(this)
+            this.findProductMovemntHistory.bind(this)
         )
     }
 
@@ -97,9 +97,9 @@ export class ProductHandler implements DefaultApiHandler {
         }, this.log, this.sessionManager, {req: req, res: res})
     }
 
-    private loadProductMovemntHistory(req: Request, res: Response) {
+    private findProductMovemntHistory(req: Request, res: Response) {
         handleApiRequest((ts) => {
-            return this.usecase.Product.LoadProductMovemetnHistory(ts)
+            return this.usecase.Product.FindProductMovemetnHistory(ts, req.body.params)
         }, this.log, this.sessionManager, {req, res})
     }
 }

@@ -4,16 +4,18 @@ import pg from "pg";
 import { Repository } from "../../repository/index.js";
 import { Logger, LoggerFields } from "../../../tools/logger/index.js"
 import { Product, ProductListResponse, ProductMovement } from '../../entity/product/entity/index.js';
-import { CreateProductParam, FindProductListParam, ProductMovementParam } from "../../entity/product/params/index.js"
+import { CreateProductParam, FindProductListParam, FindProductMovemetnHistoryParam, ProductMovementParam } from "../../entity/product/params/index.js"
 import { handleRepoDefaultError } from "../../../tools/usecase-generic/index.js";
 import { DistributionStockID } from '../../entity/stock/constant/index.js';
+import { caclLoadParamsOffset } from '../../../tools/calc/index.js';
+import { makeDateString } from '../../../tools/datefunctions/index.js';
 
 interface ProdcuctUsecaseInter {
     GetProductByID(ts: pg.PoolClient, id: number): Promise<Product>;
     CreateProduct(ts: pg.PoolClient, p: CreateProductParam, employee_login: string): Promise<number>;
     FindProductList(ts: pg.PoolClient, p: FindProductListParam, employee_login: string): Promise<ProductListResponse>;
     SendProductsToStockRecieve(ts: pg.PoolClient, p: ProductMovementParam, employee_login: string): Promise<void>;
-    LoadProductMovemetnHistory(ts: pg.PoolClient) : Promise<ProductMovement[]>;
+    FindProductMovemetnHistory(ts: pg.PoolClient, p: FindProductMovemetnHistoryParam) : Promise<ProductMovement[]>
 }
 
 export class ProductUsecase implements ProdcuctUsecaseInter {
@@ -75,8 +77,10 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
 
             try {
                 // выставить корренктный параметр offset перед загрузкой списка товаров
-                p.offset = p.offset - 1
-                p.offset = p.limit * p.offset
+                p.offset = caclLoadParamsOffset({
+                    offset: p.offset,
+                    limit: p.limit,
+                })
 
                 // поиск списока товаров
                 const productResponse = await this.repository.Product.FindProductListByStockID(ts, p, employeeResponse.stock_id)
@@ -125,9 +129,25 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
         }
     }
 
-    public async LoadProductMovemetnHistory(ts: pg.PoolClient) : Promise<ProductMovement[]> {
+    public async FindProductMovemetnHistory(ts: pg.PoolClient, p: FindProductMovemetnHistoryParam) : Promise<ProductMovement[]> {
+        p.offset = caclLoadParamsOffset({
+            offset: p.offset,
+            limit: p.limit,
+        })
+
+        if(p.movement_date_range) {
+            p.movement_date_range.min = makeDateString(new Date(p.movement_date_range.min))
+            p.movement_date_range.max = makeDateString(new Date(p.movement_date_range.max))
+            console.log(
+                `
+                MIN: ${p.movement_date_range.min}\n
+                MAX: ${p.movement_date_range.max}`
+            );
+            
+        }
+
         return handleRepoDefaultError(() => {
-            return this.repository.Product.LoadProductMovemetnHistory(ts)
+            return this.repository.Product.FindProductMovemetnHistory(ts, p)
         }, this.log, "не удалось загрузить историю перемещений продукта")
     }
 }

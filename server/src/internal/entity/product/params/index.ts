@@ -1,3 +1,4 @@
+import { LoadParams } from "../../global/entity/index.js";
 
 export interface CreateProductParam {
     product_name: string;
@@ -6,9 +7,7 @@ export interface CreateProductParam {
     v_type_list: {amount: number; id: number;}[];
 }
 
-export interface FindProductListParam {
-    limit: number;
-    offset: number;
+export interface FindProductListParam extends LoadParams {
     query: string | null;
     show_all: boolean;
     price_range: ProductPriceRange;
@@ -31,4 +30,12 @@ export interface ProductMovementParam {
     sending_stock_id: number;
     receiving_stock_id: number;
     amount: number;
+}
+
+export interface FindProductMovemetnHistoryParam extends LoadParams {
+    received: boolean | null;
+    movement_date_range: {min: string; max: string} | null;
+    sending_stock_id: number | null;
+    receiving_stock_id: number | null;
+    product_id: number | null;   
 }

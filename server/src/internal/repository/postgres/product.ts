@@ -1,7 +1,7 @@
 
 import pg from "pg";
 import { Product, ProductMovement } from "../../entity/product/entity/index.js";
-import { AddProductToStockParam, CreateProductParam, FindProductListParam, ProductMovementParam } from "../../entity/product/params/index.js"
+import { AddProductToStockParam, CreateProductParam, FindProductListParam, FindProductMovemetnHistoryParam, ProductMovementParam } from "../../entity/product/params/index.js"
 import { insert, get, insertReturnID, select } from "../../../tools/repository-generic/index.js";
 import { CountResponse } from "../../entity/global/entity/index.js";
 import { AmountOperation } from "../../entity/product/constant/index.js";
@@ -16,7 +16,7 @@ export interface ProductRepoInter {
     SendProductsToStockRecieve(ts: pg.PoolClient, p: ProductMovementParam): Promise<void>;
     DecreaseProductStockAmount(ts: pg.PoolClient, amount: number, accounting_id: number): Promise<void>;
     IncreaseProductStockAmount(ts: pg.PoolClient, amount: number, accounting_id: number): Promise<void>;
-    LoadProductMovemetnHistory(ts: pg.PoolClient) : Promise<ProductMovement[]>;
+    FindProductMovemetnHistory(ts: pg.PoolClient, p: FindProductMovemetnHistoryParam) : Promise<ProductMovement[]>
     // LoadPriceRange(ts: pgPromise.ITask<object>): Promise<ProductPriceRange>
 }
 
@@ -100,8 +100,12 @@ export class ProductRepository implements ProductRepoInter {
         return insert(ts, this.changeProductStockAmountQuery(AmountOperation.increase), false, [amount, accounting_id])
     }
 
-    public async LoadProductMovemetnHistory(ts: pg.PoolClient) : Promise<ProductMovement[]> {
-        const sqlQuery = `
+    public async FindProductMovemetnHistory(ts: pg.PoolClient, p: FindProductMovemetnHistoryParam) : Promise<ProductMovement[]> {
+        return select(ts, this.findProductMovemetnHistoryFilterQuery(p) + this.findProductMovemetnHistoryGroupQuery(p))
+    }
+
+    private get productMovementHistoryQuery(): string {
+        return `
         SELECT 
             p.product_name,
             vt.variation as variation_type,
@@ -109,7 +113,8 @@ export class ProductRepository implements ProductRepoInter {
             ss.stock_name as sending_stock,
             rs.stock_name as receiving_stock,
             psm.amount,
-            psm.received
+            psm.received,
+            psm.movement_date
         FROM product$stock_movements psm
             JOIN product$stocks ps ON(ps.accounting_id = psm.accounting_id)
             JOIN stocks ss ON(ss.stock_id = ps.stock_id)
@@ -119,8 +124,6 @@ export class ProductRepository implements ProductRepoInter {
             JOIN variation$types vt ON(vt.v_type_id = pv.v_type_id)
             JOIN unit$types ut ON(ut.u_type_id = vt.u_type_id)
         `
-
-        return select(ts, sqlQuery)
     }
 
     private findProductListFilterQuery(p: FindProductListParam, stockID: number): string {
@@ -154,5 +157,25 @@ export class ProductRepository implements ProductRepoInter {
         SET 
             amount = (amount ${operator} $1) 
         WHERE accounting_id = $2`
+    }
+
+    private findProductMovemetnHistoryFilterQuery(p: FindProductMovemetnHistoryParam): string {
+        return `
+        ${this.productMovementHistoryQuery}
+        WHERE ${p.received ? `psm.received = ${p.received}` : 'psm.received = true OR psm.received = false'}
+        ${p.movement_date_range ? `AND psm.movement_date BETWEEN '${p.movement_date_range.min}' AND '${p.movement_date_range.min}'` : ''}
+        ${p.sending_stock_id ? `AND ss.stock_id = ${p.sending_stock_id}` : ''}
+        ${p.receiving_stock_id ? `AND rs.stock_id = ${p.receiving_stock_id}` : ''}
+        ${p.product_id ? `AND p.product_id = ${p.product_id}` : ''}
+        `
+    }
+
+    private findProductMovemetnHistoryGroupQuery(p: FindProductMovemetnHistoryParam) : string {
+        return `
+        ORDER BY psm.movement_date
+        DESC
+        LIMIT ${p.limit}
+        OFFSET ${p.offset}
+        `
     }
 }

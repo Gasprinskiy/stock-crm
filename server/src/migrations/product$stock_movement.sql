@@ -38,3 +38,7 @@ ALTER TABLE
     public."product$stock_movements" ALTER COLUMN recevied SET DEFAULT false;
 ALTER TABLE
     "test_db"."public"."product$stock_movements" DROP COLUMN "sending_stock_id";
+ALTER TABLE
+    "test_db"."public"."product$stock_movements" ADD COLUMN movement_date TIMESTAMP WITH TIME zone;
+ALTER TABLE
+    "test_db"."public"."product$stock_movements" ALTER COLUMN movement_date SET DEFAULT now()

@@ -1,4 +1,5 @@
 import express from "express";
+import setTZ from 'set-tz';
 import cors from "cors"
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser"
@@ -21,7 +22,12 @@ export class Server {
         this.app.use(bodyParser.json());
         this.app.use(cors())
         this.app.use(cookieParser())
+
+        this.serverLog.Info("Setting timezone...")
+        setTZ("Asia/Tashkent")
+
         this.app.listen(this.port, () => this.serverLog.Info(`Server running at port: ${this.port}`));
+        this.serverLog.Info("Timezone Asia/Tashkent setted")
 
         return this.app
     }

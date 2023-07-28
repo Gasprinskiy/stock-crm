@@ -7,3 +7,7 @@ export const getDurationInMilliseconds = (start: [number, number]) => {
 
     return (diff[0] * NS_PER_SEC + diff[1]) / NS_TO_MS
 }
+
+export const makeDateString = (date: Date) : string => {
+    return `${date.getFullYear()}-${date.getMonth() +1}-${date.getDay()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`   
+}
