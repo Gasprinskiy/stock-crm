@@ -2,7 +2,7 @@
 import pg from "pg";
 import { Product, ProductMovement } from "../../entity/product/entity/index.js";
 import { AddProductToStockParam, CreateProductParam, FindProductListParam, FindProductMovemetnHistoryParam, ProductMovementParam } from "../../entity/product/params/index.js"
-import { insert, get, insertReturnID, select } from "../../../tools/repository-generic/index.js";
+import { insert, get, insertReturnID, select, getReturnField } from "../../../tools/repository-generic/index.js";
 import { CountResponse } from "../../entity/global/entity/index.js";
 import { AmountOperation } from "../../entity/product/constant/index.js";
 
@@ -13,15 +13,18 @@ export interface ProductRepoInter {
     AddProductToStock(ts: pg.PoolClient, params: AddProductToStockParam): Promise<number>;
     FindProductListByStockID(ts: pg.PoolClient, p: FindProductListParam, stockID: number): Promise<Product[]>;
     FindProductCount(ts: pg.PoolClient, p: FindProductListParam, stockID: number): Promise<number>;
-    SendProductsToStockRecieve(ts: pg.PoolClient, p: ProductMovementParam): Promise<void>;
+    SendProductsToStockRecieve(ts: pg.PoolClient, p: ProductMovementParam): Promise<number>;
     DecreaseProductStockAmount(ts: pg.PoolClient, amount: number, accounting_id: number): Promise<void>;
     IncreaseProductStockAmount(ts: pg.PoolClient, amount: number, accounting_id: number): Promise<void>;
-    FindProductMovemetnHistory(ts: pg.PoolClient, p: FindProductMovemetnHistoryParam) : Promise<ProductMovement[]>
+    FindProductMovemetnHistory(ts: pg.PoolClient, p: FindProductMovemetnHistoryParam) : Promise<ProductMovement[]>;
+    FindStockReceivesByID(ts: pg.PoolClient, mvmnt_id: number): Promise<ProductMovement[]>;
+    FindExistAccounting(ts: pg.PoolClient, accounting_id: number, stock_id: number) : Promise<number>;
+    MarkMovementAsReceived(ts: pg.PoolClient, mvmnt_id: number): Promise<void>;
     // LoadPriceRange(ts: pgPromise.ITask<object>): Promise<ProductPriceRange>
 }
 
 export class ProductRepository implements ProductRepoInter {
-    public async GetProductByID(ts: pg.PoolClient, id: number): Promise<Product> {
+    public GetProductByID(ts: pg.PoolClient, id: number): Promise<Product> {
         const sqlQuery = `
         SELECT pr.product_id, pr.product_name, pr.description, pr.tags, pr.creation_date
         FROM product pr
@@ -31,7 +34,7 @@ export class ProductRepository implements ProductRepoInter {
         return get(ts, sqlQuery, [id])
     }
 
-    public async CreateProduct(ts: pg.PoolClient, p: CreateProductParam): Promise<number> {
+    public CreateProduct(ts: pg.PoolClient, p: CreateProductParam): Promise<number> {
         const sqlQuery = `
         INSERT INTO product(product_name, description, tags)
         VALUES ('${p.product_name}', '${p.description}', '${p.tags}')
@@ -40,7 +43,7 @@ export class ProductRepository implements ProductRepoInter {
         return insertReturnID(ts, sqlQuery, 'product_id')
     }
 
-    public async CreateProductVariation(ts: pg.PoolClient, product_id: number, v_type_id: number): Promise<number> {
+    public CreateProductVariation(ts: pg.PoolClient, product_id: number, v_type_id: number): Promise<number> {
         const sqlQuery = `
         INSERT INTO product$variations(product_id, v_type_id)
         VALUES ('${product_id}', '${v_type_id}')
@@ -49,7 +52,7 @@ export class ProductRepository implements ProductRepoInter {
         return insertReturnID(ts, sqlQuery, 'variation_id')
     }
     
-    public async AddProductToStock(ts: pg.PoolClient, params: AddProductToStockParam): Promise<number> {
+    public AddProductToStock(ts: pg.PoolClient, params: AddProductToStockParam): Promise<number> {
         const sqlQuery = `
         INSERT INTO product$stocks(stock_id, product_id, amount, variation_id)
         VALUES ('${params.stock_id}', '${params.product_id}', '${params.amount}', '${params.variation_id}')
@@ -58,7 +61,7 @@ export class ProductRepository implements ProductRepoInter {
         return insertReturnID(ts, sqlQuery, 'accounting_id')
     }
 
-    public async FindProductListByStockID(ts: pg.PoolClient, p: FindProductListParam, stockID: number): Promise<Product[]> {
+    public FindProductListByStockID(ts: pg.PoolClient, p: FindProductListParam, stockID: number): Promise<Product[]> {
         const sqlQuery = `
         SELECT 
             p.product_id, 
@@ -74,7 +77,7 @@ export class ProductRepository implements ProductRepoInter {
         return select(ts, sqlQuery)
     }
 
-    public async FindProductCount(ts: pg.PoolClient, p: FindProductListParam, stockID: number): Promise<number> {
+    public FindProductCount(ts: pg.PoolClient, p: FindProductListParam, stockID: number): Promise<number> {
         const sqlQuery = `
         SELECT count(DISTINCT p.product_id)
         FROM product p
@@ -84,34 +87,69 @@ export class ProductRepository implements ProductRepoInter {
         return get(ts, sqlQuery)
     }
 
-    public async SendProductsToStockRecieve(ts: pg.PoolClient, p: ProductMovementParam): Promise<void> {
+    public SendProductsToStockRecieve(ts: pg.PoolClient, p: ProductMovementParam): Promise<number> {
         const sqlQuery = `
         INSERT INTO product$stock_movements(accounting_id, receiving_stock_id, amount)
-        VALUES('${p.accounting_id}', '${p.receiving_stock_id}', '${p.amount}')` 
+        VALUES('${p.accounting_id}', '${p.receiving_stock_id}', '${p.amount}')
+        RETURNING mvmnt_id` 
 
-        return insert(ts, sqlQuery)
+        return insertReturnID(ts, sqlQuery, 'mvmnt_id')
     }
 
-    public async DecreaseProductStockAmount(ts: pg.PoolClient, amount: number, accounting_id: number): Promise<void> {
+    public DecreaseProductStockAmount(ts: pg.PoolClient, amount: number, accounting_id: number): Promise<void> {
         return insert(ts, this.changeProductStockAmountQuery(AmountOperation.decrease), false, [amount, accounting_id])
     }
 
-    public async IncreaseProductStockAmount(ts: pg.PoolClient, amount: number, accounting_id: number): Promise<void> {
+    public IncreaseProductStockAmount(ts: pg.PoolClient, amount: number, accounting_id: number): Promise<void> {
         return insert(ts, this.changeProductStockAmountQuery(AmountOperation.increase), false, [amount, accounting_id])
     }
 
-    public async FindProductMovemetnHistory(ts: pg.PoolClient, p: FindProductMovemetnHistoryParam) : Promise<ProductMovement[]> {
+    public FindProductMovemetnHistory(ts: pg.PoolClient, p: FindProductMovemetnHistoryParam) : Promise<ProductMovement[]> {
         return select(ts, this.findProductMovemetnHistoryFilterQuery(p) + this.findProductMovemetnHistoryGroupQuery(p))
+    }
+
+    public FindStockReceivesByID(ts: pg.PoolClient, mvmnt_id: number): Promise<ProductMovement[]> {
+        return select(ts, this.productMovementHistoryQuery + "WHERE psm.mvmnt_id = $1", [mvmnt_id])
+    }
+
+    public FindExistAccounting(ts: pg.PoolClient, accounting_id: number, stock_id: number) : Promise<number> {
+        const sqlQuery = `
+        SELECT ps.accounting_id
+        FROM product$stocks ps
+                JOIN product$stocks psm ON(psm.product_id = ps.product_id AND psm.variation_id = ps.variation_id)
+        WHERE psm.accounting_id = $1
+        AND ps.accounting_id != $1
+        AND ps.stock_id = $2`
+
+        return getReturnField(ts, sqlQuery, 'accounting_id', [accounting_id, stock_id])
+    }
+
+    public MarkMovementAsReceived(ts: pg.PoolClient, mvmnt_id: number): Promise<void> {
+        const sqlQuery = `
+        UPDATE 
+            product$stock_movements
+        SET
+            received = true
+        WHERE mvmnt_id = $1
+        `
+
+        return insert(ts, sqlQuery, false, [mvmnt_id])
     }
 
     private get productMovementHistoryQuery(): string {
         return `
         SELECT 
+            psm.mvmnt_id,
             p.product_name,
+            p.product_id,
             vt.variation as variation_type,
+            pv.variation_id,
             ut.type as unit_type,
             ss.stock_name as sending_stock,
+            ss.stock_id as sending_stock_id,
+            ps.accounting_id as sending_accounting_id,
             rs.stock_name as receiving_stock,
+            rs.stock_id as receiving_stock_id,
             psm.amount,
             psm.received,
             psm.movement_date
@@ -162,8 +200,8 @@ export class ProductRepository implements ProductRepoInter {
     private findProductMovemetnHistoryFilterQuery(p: FindProductMovemetnHistoryParam): string {
         return `
         ${this.productMovementHistoryQuery}
-        WHERE ${p.received ? `psm.received = ${p.received}` : 'psm.received = true OR psm.received = false'}
-        ${p.movement_date_range ? `AND psm.movement_date BETWEEN '${p.movement_date_range.min}' AND '${p.movement_date_range.min}'` : ''}
+        WHERE ${p.received !== null ? `psm.received = ${p.received}` : 'psm.received = true OR psm.received = false'}
+        ${p.movement_date_range ? `AND psm.movement_date BETWEEN '${p.movement_date_range.min}' AND '${p.movement_date_range.max}'` : ''}
         ${p.sending_stock_id ? `AND ss.stock_id = ${p.sending_stock_id}` : ''}
         ${p.receiving_stock_id ? `AND rs.stock_id = ${p.receiving_stock_id}` : ''}
         ${p.product_id ? `AND p.product_id = ${p.product_id}` : ''}

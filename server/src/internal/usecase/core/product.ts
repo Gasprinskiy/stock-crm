@@ -1,6 +1,6 @@
-import { InternalErrorsMap } from '../../entity/global/error/index.js';
 import pg from "pg";
-
+import moment from "moment"
+import { InternalErrorsMap } from '../../entity/global/error/index.js';
 import { Repository } from "../../repository/index.js";
 import { Logger, LoggerFields } from "../../../tools/logger/index.js"
 import { Product, ProductListResponse, ProductMovement } from '../../entity/product/entity/index.js';
@@ -8,13 +8,13 @@ import { CreateProductParam, FindProductListParam, FindProductMovemetnHistoryPar
 import { handleRepoDefaultError } from "../../../tools/usecase-generic/index.js";
 import { DistributionStockID } from '../../entity/stock/constant/index.js';
 import { caclLoadParamsOffset } from '../../../tools/calc/index.js';
-import { makeDateString } from '../../../tools/datefunctions/index.js';
+import { date_time_format } from '../../../tools/datefunctions/index.js';
 
 interface ProdcuctUsecaseInter {
     GetProductByID(ts: pg.PoolClient, id: number): Promise<Product>;
     CreateProduct(ts: pg.PoolClient, p: CreateProductParam, employee_login: string): Promise<number>;
     FindProductList(ts: pg.PoolClient, p: FindProductListParam, employee_login: string): Promise<ProductListResponse>;
-    SendProductsToStockRecieve(ts: pg.PoolClient, p: ProductMovementParam, employee_login: string): Promise<void>;
+    SendProductsToStockRecieve(ts: pg.PoolClient, p: ProductMovementParam, employee_login: string): Promise<number>;
     FindProductMovemetnHistory(ts: pg.PoolClient, p: FindProductMovemetnHistoryParam) : Promise<ProductMovement[]>
 }
 
@@ -110,7 +110,7 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
         }
     }
 
-    public async SendProductsToStockRecieve(ts: pg.PoolClient, p: ProductMovementParam, employee_login: string): Promise<void> {
+    public async SendProductsToStockRecieve(ts: pg.PoolClient, p: ProductMovementParam, employee_login: string): Promise<number> {
         const lf: LoggerFields = {
             "employee_login": employee_login,
             "accounting_id": p.accounting_id,
@@ -119,10 +119,11 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
             "amount": p.amount
         }
         try {
-            await this.repository.Product.SendProductsToStockRecieve(ts, p);
+            const movementID = await this.repository.Product.SendProductsToStockRecieve(ts, p);
             await this.repository.Product.DecreaseProductStockAmount(ts, p.amount, p.accounting_id);
 
             this.log.WithFields(lf).Info("совершено отправка продукта со склада на склад")
+            return movementID
         } catch(err: any) {
             this.log.WithFields(lf).Error(err, "не удалось отправить продукта со склада на склад")
             throw err
@@ -136,18 +137,55 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
         })
 
         if(p.movement_date_range) {
-            p.movement_date_range.min = makeDateString(new Date(p.movement_date_range.min))
-            p.movement_date_range.max = makeDateString(new Date(p.movement_date_range.max))
-            console.log(
-                `
-                MIN: ${p.movement_date_range.min}\n
-                MAX: ${p.movement_date_range.max}`
-            );
-            
+            p.movement_date_range.min = moment(p.movement_date_range.min).format(date_time_format)
+            p.movement_date_range.max = moment(p.movement_date_range.max).format(date_time_format)         
         }
 
         return handleRepoDefaultError(() => {
             return this.repository.Product.FindProductMovemetnHistory(ts, p)
         }, this.log, "не удалось загрузить историю перемещений продукта")
+    }
+
+    public async RecieveProduct(ts: pg.PoolClient, p: ProductMovement, employee_login: string): Promise<void> {
+        const lf: LoggerFields = {
+            "employee_login": employee_login,
+            "sending_stock_id": p.sending_stock_id,
+            "receiving_stock_id": p.receiving_stock_id,
+            "product_id": p.product_id,
+            "variation_id": p.variation_id
+        }
+
+        try {
+            const existAccountingID = await this.repository.Product.FindExistAccounting(ts, p.sending_accounting_id, p.receiving_stock_id)
+            await this.repository.Product.IncreaseProductStockAmount(ts, p.amount, existAccountingID)
+        } catch(err: any) {
+            switch (err) {
+                case InternalErrorsMap.ErrNoData:
+                    try {
+                        await this.repository.Product.AddProductToStock(ts, {
+                            stock_id: p.receiving_stock_id,
+                            product_id: p.product_id,
+                            amount: p.amount,
+                            variation_id: p.variation_id,
+                        })
+                    } catch(err: any) {
+                        this.log.WithFields(lf).Error(err, "не удалось добавить новый товар на склад")
+                        throw InternalErrorsMap.ErrInternalError
+                    }
+                break
+
+                default:
+                    this.log.WithFields(lf).Error(err, "не удалось совершить приемку товара")
+                    throw InternalErrorsMap.ErrInternalError
+            }
+        }
+
+        try {
+            await this.repository.Product.MarkMovementAsReceived(ts, p.mvmnt_id)
+            this.log.WithFields(lf).Info("прием товара завершен")
+        } catch(err: any) {
+            this.log.WithFields(lf).Error(err, "не удалось совершить приемку товара, ошибка при попытке пометить приемку как полученное")
+            throw InternalErrorsMap.ErrInternalError
+        }
     }
 }

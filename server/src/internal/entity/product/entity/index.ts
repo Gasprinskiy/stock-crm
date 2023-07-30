@@ -18,11 +18,17 @@ export interface ProductVariation {
 }
 
 export interface ProductMovement {
+    mvmnt_id: number;
     product_name: string;
+    product_id: number;
     variation_type: number;
+    variation_id: number;
     unit_type: string;
     sending_stock: string;
+    sending_accounting_id: number;
+    sending_stock_id: number;
     receiving_stock: string;
+    receiving_stock_id: number;
     amount: number;
     received: boolean;
 }
