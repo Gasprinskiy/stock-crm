@@ -42,7 +42,6 @@ export class ProductHandler implements DefaultApiHandler {
         this.app.post(
             '/create_product',
             this.middleware.CheckAccessRight(
-                AccessRight.full_access, 
                 AccessRight.distributor,
             ).bind(this.middleware),
             this.createProduct.bind(this)
@@ -57,8 +56,8 @@ export class ProductHandler implements DefaultApiHandler {
         this.app.post(
             '/product_move',
             this.middleware.CheckAccessRight(
-                AccessRight.full_access, 
                 AccessRight.distributor,
+                AccessRight.stock_worker,
             ).bind(this.middleware),
             this.sendProductsToStockRecieve.bind(this)
         )
@@ -66,10 +65,17 @@ export class ProductHandler implements DefaultApiHandler {
         this.app.get(
             '/product_movement_history',
             this.middleware.CheckAccessRight(
-                AccessRight.full_access,
                 AccessRight.distributor,
             ).bind(this.middleware),
             this.findProductMovemntHistory.bind(this)
+        )
+
+        this.app.post(
+            '/recieve_product',
+            this.middleware.CheckAccessRight(
+                AccessRight.stock_worker,
+            ).bind(this.middleware),
+            this.recieveProduct.bind(this)
         )
     }
 
@@ -100,6 +106,12 @@ export class ProductHandler implements DefaultApiHandler {
     private findProductMovemntHistory(req: Request, res: Response) {
         handleApiRequest((ts) => {
             return this.usecase.Product.FindProductMovemetnHistory(ts, req.body.params)
+        }, this.log, this.sessionManager, {req, res})
+    }
+
+    private recieveProduct(req: Request, res: Response) {
+        handleApiRequest((ts) => {
+            return this.usecase.Product.RecieveProduct(ts, req.body.params, req.user.login)
         }, this.log, this.sessionManager, {req, res})
     }
 }
