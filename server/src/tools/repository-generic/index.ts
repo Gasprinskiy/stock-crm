@@ -3,7 +3,7 @@ import pg from "pg";
 
 export const select = async <T>(ts: pg.PoolClient, query: string, args?: any[]) : Promise<T[]> => {
     try {
-        const response = await ts.query(query, args)
+        const response = await ts.query(query, args)        
         if (response.rows.length <= 0) {
             throw InternalErrorsMap.ErrNoData
         }
@@ -22,6 +22,19 @@ export const get = async <T>(ts: pg.PoolClient, query: string, args?: any[]) : P
         }
 
         return response.rows[0]
+    } catch(err: any) {
+        throw err
+    }
+}
+
+export const getReturnField = async <T>(ts: pg.PoolClient, query: string, field: keyof pg.QueryResultRow, args?: any[]) : Promise<T> => {
+    try {
+        const response = await ts.query(query, args)
+        if (response.rows.length <= 0) {
+            throw InternalErrorsMap.ErrNoData
+        }
+
+        return response.rows[0][field]
     } catch(err: any) {
         throw err
     }
