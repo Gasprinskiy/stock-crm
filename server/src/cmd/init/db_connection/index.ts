@@ -3,12 +3,10 @@ import { Logger } from "../../../tools/logger/index.js";
 
 export class PostgresDBase {
     private log: Logger;
-    // new client
     private client: pg.Pool;
 
     constructor(connectionString: string) {
         this.log = new Logger("postgress-connection");
-
         this.client = new pg.Pool({
             connectionString
         })
