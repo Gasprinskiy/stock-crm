@@ -58,9 +58,14 @@ export class ApiMiddleware {
     private async checkAccessRight(req: Request, res: Response, next: NextFunction, ...ableAccessRights: AccessRight[]) : Promise<void> {  
         try {
             const decodedToked = await this.decodeToken(req)
-            if (!ableAccessRights.includes(decodedToked?.ar_id)) {
+            if (decodedToked.ar_id === AccessRight.full_access) {
+                return next()
+            }
+
+            if (!ableAccessRights.includes(decodedToked.ar_id)) {
                 throw InternalErrorsMap.ErrNoAccesRight
             }
+            
             return next()
         } catch(err: any) {
             responseServerError(res, err, this.log)

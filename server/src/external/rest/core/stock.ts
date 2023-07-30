@@ -18,13 +18,11 @@ export class StockHandler implements DefaultApiHandler {
     
     constructor(params:{
         app: express.Express, 
-        // db: pgPromise.IDatabase<object>,
         ui: Usecase, 
         middleware: ApiMiddleware,
         sessionManager: SessionManager;
     }){
         this.app = params.app;
-        // this.db = params.db;
         this.usecase = params.ui;
         this.middleware = params.middleware;
         this.log = new Logger("stock-external")

@@ -41,7 +41,7 @@ export class EmployeeHandler implements DefaultApiHandler {
 
         this.app.post(
             "/create_employee",
-            this.middleware.CheckAccessRight(AccessRight.full_access, AccessRight.stock_manager).bind(this.middleware),
+            this.middleware.CheckAccessRight(AccessRight.stock_manager).bind(this.middleware),
             this.createEmployee.bind(this)
         )
 
