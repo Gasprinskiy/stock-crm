@@ -10,10 +10,10 @@ import { SessionManager } from './init/session_manager/index.js';
 
 const config = new Config()
 
-const pgDbase = new PostgresDBase(config.PgConnectionString())
+const pgDbase = new PostgresDBase(config.PgConnectionString)
 const client = await pgDbase.Connect()
 
-const server = new Server(config.ServerPort())
+const server = new Server(config.ServerPort)
 const serverApp = await server.Run()
 
 const sessionManager = new SessionManager(client)
@@ -21,7 +21,7 @@ const sessionManager = new SessionManager(client)
 const repository = new Repository()
 const usecase = new Usecase(repository)
 
-const middleware = new ApiMiddleware(config.TokenKey())
+const middleware = new ApiMiddleware(config.TokenKey)
 
 const exteranl = new ApiHandler({
     app: serverApp,
