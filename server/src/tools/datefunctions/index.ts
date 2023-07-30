@@ -1,4 +1,7 @@
+import moment from "moment"
+
 export const timezone_date_string = new Date().toLocaleString("uz-UZ", { timeZone: "Asia/Tashkent" })
+export const date_time_format = "YYYY-MM-DD HH:mm:ss"
 
 export const getDurationInMilliseconds = (start: [number, number]) => {
     const NS_PER_SEC = 1e9
@@ -6,8 +9,4 @@ export const getDurationInMilliseconds = (start: [number, number]) => {
     const diff = process.hrtime(start)
 
     return (diff[0] * NS_PER_SEC + diff[1]) / NS_TO_MS
-}
-
-export const makeDateString = (date: Date) : string => {
-    return `${date.getFullYear()}-${date.getMonth() +1}-${date.getDay()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`   
 }
