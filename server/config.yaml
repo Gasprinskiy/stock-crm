@@ -8,3 +8,4 @@ postgres:
 server:
   port: 3000
   token_key: SAY_HELLO_TO_MY_LITTLE_FRIEND
+  time_zone: "Asia/Tashkent"
