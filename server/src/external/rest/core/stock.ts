@@ -32,19 +32,27 @@ export class StockHandler implements DefaultApiHandler {
 
     public Init(){
         this.app.get(
-            "/load_stocks",
+            "/find_empl_stocks",
             this.middleware.IsAuthorized.bind(this.middleware), 
+            this.findStockListByEmployeeID.bind(this)
+        )
+
+        this.app.get(
+            "/load_stocks",
+            this.middleware.IsAuthorized.bind(this.middleware),
             this.loadStocks.bind(this)
         )
     }
 
-    private async loadStocks(req: Request, res: Response) {
-        const { empl_id, ar_id } = req.user
+    private findStockListByEmployeeID(req: Request, res: Response) {
         handleApiRequest((sm) => {
-            return this.usecase.Stock.FindStockListByEmployeeID(sm, empl_id)
+            return this.usecase.Stock.FindStockListByEmployeeID(sm, req.user.empl_id)
         }, this.log, this.sessionManager, {req: req, res: res})
-        // handleApiRequest((ts) => {
-        //     return this.usecase.Stock.FindStockListByEmployeeID(ts, empl_id)
-        // }, this.log, this.db, {req: req, res: res})
+    }
+
+    private loadStocks(req: Request, res: Response) {
+        handleApiRequest((ts) => {
+            return this.usecase.Stock.LoadStocks(ts)
+        }, this.log, this.sessionManager, {req: req, res: res})
     }
 }
