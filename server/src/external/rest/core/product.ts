@@ -93,7 +93,7 @@ export class ProductHandler implements DefaultApiHandler {
 
     private async findProductList(req: Request, res: Response) {
         handleApiRequest((ts) => {
-            return this.usecase.Product.FindProductList(ts, req.body.params, req.user.login)
+            return this.usecase.Product.FindProductList(ts, req.body.params)
         }, this.log, this.sessionManager, {req: req, res: res})
     }
 

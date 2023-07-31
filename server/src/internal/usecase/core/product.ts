@@ -13,7 +13,7 @@ import { date_time_format } from '../../../tools/datefunctions/index.js';
 interface ProdcuctUsecaseInter {
     GetProductByID(ts: pg.PoolClient, id: number): Promise<Product>;
     CreateProduct(ts: pg.PoolClient, p: CreateProductParam, employee_login: string): Promise<number>;
-    FindProductList(ts: pg.PoolClient, p: FindProductListParam, employee_login: string): Promise<ProductListResponse>;
+    FindProductList(ts: pg.PoolClient, p: FindProductListParam, stock_id: number): Promise<ProductListResponse>;
     SendProductsToStockRecieve(ts: pg.PoolClient, p: ProductMovementParam, employee_login: string): Promise<number>;
     FindProductMovemetnHistory(ts: pg.PoolClient, p: FindProductMovemetnHistoryParam) : Promise<ProductMovement[]>
 }
@@ -67,45 +67,35 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
     }
     
     // FindProductList поиск товаров
-    public async FindProductList(ts: pg.PoolClient, p: FindProductListParam, employee_login: string): Promise<ProductListResponse> {
-        const lf: LoggerFields = {
-            "employee_login": employee_login
-        }
+    public async FindProductList(ts: pg.PoolClient, p: FindProductListParam): Promise<ProductListResponse> {
+        
         try {
-            // получить работника по логину что бы далее загружать продукты по складу к которому он прикреплен
-            const employeeResponse = await this.repository.Employee.GetEmployeeByLogin(ts, employee_login)
+            // выставить корренктный параметр offset перед загрузкой списка товаров
+            p.offset = caclLoadParamsOffset({
+                offset: p.offset,
+                limit: p.limit,
+            })
+
+            // поиск списока товаров
+            const productResponse = await this.repository.Product.FindProductListByStockID(ts, p)
 
             try {
-                // выставить корренктный параметр offset перед загрузкой списка товаров
-                p.offset = caclLoadParamsOffset({
-                    offset: p.offset,
-                    limit: p.limit,
-                })
+                const pageCountResponse = await this.repository.Product.FindProductCount(ts, p)
 
-                // поиск списока товаров
-                const productResponse = await this.repository.Product.FindProductListByStockID(ts, p, employeeResponse.stock_id)
-
-                try {
-                    const pageCountResponse = await this.repository.Product.FindProductCount(ts, p, employeeResponse.stock_id)
-
-                    return {
-                        product_list: productResponse,
-                        page_count: Math.ceil(pageCountResponse / p.limit)
-                    }
-                    
-                } catch(err: any) {
-                    this.log.WithFields(lf).Error(err, 'не удалось загрузить общее количество товара, ошибка')
-                    throw InternalErrorsMap.ErrInternalError
+                return {
+                    product_list: productResponse,
+                    page_count: Math.ceil(pageCountResponse / p.limit)
                 }
+                
             } catch(err: any) {
-                if (err === InternalErrorsMap.ErrNoData) {
-                    throw InternalErrorsMap.ErrNoData
-                }
-                this.log.WithFields(lf).Error(err, 'не удалось загрузить список продуктов')
-                throw InternalErrorsMap.ErrInternalError
-            } 
+                this.log.Error(err, 'не удалось загрузить общее количество товара, ошибка')
+                throw err
+            }
         } catch(err: any) {
-            this.log.WithFields(lf).Error(err, 'не удалось найти сотрудника по логину')
+            if (err === InternalErrorsMap.ErrNoData) {
+                throw InternalErrorsMap.ErrNoData
+            }
+            this.log.Error(err, 'не удалось загрузить список продуктов')
             throw InternalErrorsMap.ErrInternalError
         }
     }
