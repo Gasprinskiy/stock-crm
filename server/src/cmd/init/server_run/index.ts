@@ -23,11 +23,7 @@ export class Server {
         this.app.use(cors())
         this.app.use(cookieParser())
 
-        this.serverLog.Info("Setting timezone...")
-        setTZ("Asia/Tashkent")
-
         this.app.listen(this.port, () => this.serverLog.Info(`Server running at port: ${this.port}`));
-        this.serverLog.Info("Timezone Asia/Tashkent setted")
 
         return this.app
     }
