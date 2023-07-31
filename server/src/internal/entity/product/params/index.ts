@@ -8,9 +8,10 @@ export interface CreateProductParam {
 }
 
 export interface FindProductListParam extends LoadParams {
-    query: string | null;
-    show_all: boolean;
-    price_range: ProductPriceRange;
+    stock_id?: number;
+    query?: string;
+    show_all?: boolean;
+    price_range?: {min: number; max: number};
 }
 
 export interface ProductPriceRange {
@@ -33,9 +34,9 @@ export interface ProductMovementParam {
 }
 
 export interface FindProductMovemetnHistoryParam extends LoadParams {
-    received: boolean | null;
-    movement_date_range: {min: string; max: string} | null;
-    sending_stock_id: number | null;
-    receiving_stock_id: number | null;
-    product_id: number | null;   
+    received?: boolean;
+    movement_date_range?: {min: string; max: string};
+    sending_stock_id?: number;
+    receiving_stock_id?: number;
+    product_id?: number;   
 }

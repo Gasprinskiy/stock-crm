@@ -11,13 +11,15 @@ export interface ProductRepoInter {
     CreateProduct(ts: pg.PoolClient, p: CreateProductParam): Promise<number>;
     CreateProductVariation(ts: pg.PoolClient, product_id: number, v_type_id: number): Promise<number>;
     AddProductToStock(ts: pg.PoolClient, params: AddProductToStockParam): Promise<number>;
-    FindProductListByStockID(ts: pg.PoolClient, p: FindProductListParam, stockID: number): Promise<Product[]>;
-    FindProductCount(ts: pg.PoolClient, p: FindProductListParam, stockID: number): Promise<number>;
+    FindProductListByStockID(ts: pg.PoolClient, p: FindProductListParam): Promise<Product[]>;
+    FindProductCount(ts: pg.PoolClient, p: FindProductListParam): Promise<number>;
     SendProductsToStockRecieve(ts: pg.PoolClient, p: ProductMovementParam): Promise<number>;
     DecreaseProductStockAmount(ts: pg.PoolClient, amount: number, accounting_id: number): Promise<void>;
     IncreaseProductStockAmount(ts: pg.PoolClient, amount: number, accounting_id: number): Promise<void>;
     FindProductMovemetnHistory(ts: pg.PoolClient, p: FindProductMovemetnHistoryParam) : Promise<ProductMovement[]>;
-    FindStockReceivesByID(ts: pg.PoolClient, mvmnt_id: number): Promise<ProductMovement[]>;
+    FindProductStockMovementByID(ts: pg.PoolClient, mvmnt_id: number): Promise<ProductMovement[]>;
+    FindProductStockMovementIn(ts: pg.PoolClient, stock_id: number): Promise<ProductMovement[]>;
+    FindProductStockMovementOut(ts: pg.PoolClient, stock_id: number): Promise<ProductMovement[]>;
     FindExistAccounting(ts: pg.PoolClient, accounting_id: number, stock_id: number) : Promise<number>;
     MarkMovementAsReceived(ts: pg.PoolClient, mvmnt_id: number): Promise<void>;
     // LoadPriceRange(ts: pgPromise.ITask<object>): Promise<ProductPriceRange>
@@ -61,30 +63,31 @@ export class ProductRepository implements ProductRepoInter {
         return insertReturnID(ts, sqlQuery, 'accounting_id')
     }
 
-    public FindProductListByStockID(ts: pg.PoolClient, p: FindProductListParam, stockID: number): Promise<Product[]> {
+    public FindProductListByStockID(ts: pg.PoolClient, p: FindProductListParam): Promise<Product[]> {
         const sqlQuery = `
         SELECT 
-            p.product_id, 
+            p.product_id,
+            ps.stock_id, 
             p.product_name, 
             p.description, 
             p.tags,
             CAST(SUM(ps.amount) as INTEGER) as total_amount
         FROM product p
             JOIN product$stocks ps on(ps.product_id = p.product_id)
-        ${this.findProductListFilterQuery(p, stockID)}
+        ${this.findProductListFilterQuery(p)}
         ${this.findProductListGroupQuery(p)}`
 
         return select(ts, sqlQuery)
     }
 
-    public FindProductCount(ts: pg.PoolClient, p: FindProductListParam, stockID: number): Promise<number> {
+    public FindProductCount(ts: pg.PoolClient, p: FindProductListParam): Promise<number> {
         const sqlQuery = `
         SELECT count(DISTINCT p.product_id)
         FROM product p
             JOIN product$stocks ps ON(ps.product_id = p.product_id)
-        ${this.findProductListFilterQuery(p, stockID)}`
+        ${this.findProductListFilterQuery(p)}`
 
-        return get(ts, sqlQuery)
+        return getReturnField(ts, sqlQuery, 'count')
     }
 
     public SendProductsToStockRecieve(ts: pg.PoolClient, p: ProductMovementParam): Promise<number> {
@@ -108,15 +111,23 @@ export class ProductRepository implements ProductRepoInter {
         return select(ts, this.findProductMovemetnHistoryFilterQuery(p) + this.findProductMovemetnHistoryGroupQuery(p))
     }
 
-    public FindStockReceivesByID(ts: pg.PoolClient, mvmnt_id: number): Promise<ProductMovement[]> {
+    public FindProductStockMovementByID(ts: pg.PoolClient, mvmnt_id: number): Promise<ProductMovement[]> {
         return select(ts, this.productMovementHistoryQuery + "WHERE psm.mvmnt_id = $1", [mvmnt_id])
+    }
+
+    public FindProductStockMovementIn(ts: pg.PoolClient, stock_id: number): Promise<ProductMovement[]> {
+        return select(ts, this.productMovementHistoryQuery + "WHERE rs.stock_id = $1", [stock_id])
+    }
+
+    public FindProductStockMovementOut(ts: pg.PoolClient, stock_id: number): Promise<ProductMovement[]> {
+        return select(ts, this.productMovementHistoryQuery + "WHERE ss.stock_id = $1", [stock_id])
     }
 
     public FindExistAccounting(ts: pg.PoolClient, accounting_id: number, stock_id: number) : Promise<number> {
         const sqlQuery = `
         SELECT ps.accounting_id
         FROM product$stocks ps
-                JOIN product$stocks psm ON(psm.product_id = ps.product_id AND psm.variation_id = ps.variation_id)
+            JOIN product$stocks psm ON(psm.product_id = ps.product_id AND psm.variation_id = ps.variation_id)
         WHERE psm.accounting_id = $1
         AND ps.accounting_id != $1
         AND ps.stock_id = $2`
@@ -164,18 +175,18 @@ export class ProductRepository implements ProductRepoInter {
         `
     }
 
-    private findProductListFilterQuery(p: FindProductListParam, stockID: number): string {
+    private findProductListFilterQuery(p: FindProductListParam): string {
         return `
-        WHERE ps.stock_id = COALESCE(${stockID}, ps.stock_id)
+        WHERE ${p.stock_id ? `ps.stock_id = ${p.stock_id}` : 'ps.stock_id = ps.stock_id'}
         ${p.price_range ? `AND (
-            pr.price BETWEEN ${p.price_range.min_price} and ${p.price_range.max_price}
+            pr.price BETWEEN ${p.price_range.min} and ${p.price_range.max}
         )` : ""}
         ${p.query ? `AND (
             LOWER(p.product_name) like LOWER('%${p.query}%')
             OR
             LOWER(p.tags) like LOWER('%${p.query}%')
         )`: ""}
-        ${p.show_all ? "" : "AND ps.amount > 0"}`
+        ${p.show_all === true ? "" : "AND ps.amount > 0"}`
     }
 
     private findProductListGroupQuery(p: FindProductListParam): string {
