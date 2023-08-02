@@ -12,8 +12,6 @@ const instance = axios.create({
 export const handleApiPostRequest = async <T>(path: string, params?: any): Promise<T> => {
     try {
         const response = await instance.post(`/${path}`, {params: params})
-        console.log(response);
-        
         return response.data
     } catch(err: any) {
         throw err.response.data.message

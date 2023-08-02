@@ -15,13 +15,23 @@ import apiInjectionMap from './api-worker'
 const employeeApiWorker = inject(apiInjectionMap.employee.key)
 const router = useRouter()
 
-onBeforeMount(async () => {  
+const isAuth = async () => {
   try {
     await employeeApiWorker.isAuth()
   } catch(err: any) {
     router.push({
       name: "Auth"
     })
+  }
+}
+
+onBeforeMount(async () => {  
+  await isAuth()
+})
+
+router.beforeEach(async (to, from) => {
+  if (to.name !== "Auth") {
+    await isAuth()
   }
 })
 

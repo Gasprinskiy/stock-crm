@@ -24,7 +24,7 @@ export class Server {
         this.app.use(bodyParser.json());
         this.app.use(cors({
             origin: [
-                "http://127.0.0.3"
+                "http://127.0.0.3:8080"
             ],
             credentials: true,
         }))

@@ -35,8 +35,13 @@ export class EmployeeHandler implements DefaultApiHandler {
 
     public Init(){
         this.app.post(
-            "/auth", 
-            this.auth.bind(this)
+            "/log_in", 
+            this.logIn.bind(this)
+        )
+
+        this.app.post(
+            "/log_out", 
+            this.middleware.SendExpiredCoockie.bind(this.middleware)
         )
 
         this.app.post(
@@ -51,11 +56,11 @@ export class EmployeeHandler implements DefaultApiHandler {
         )
     }
 
-    private async auth(req: Request, res: Response) {
+    private async logIn(req: Request, res: Response) {
         logRequests(req, res, this.log)
         
         try {
-            const response = await this.usecase.Employee.Auth(this.sessionManager.client, req.body.params)
+            const response = await this.usecase.Employee.LogIn(this.sessionManager.client, req.body.params)
             await this.middleware.CreateJwtToken(response, res)
 
             res.json(response)

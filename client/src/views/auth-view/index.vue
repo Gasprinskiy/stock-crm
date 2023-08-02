@@ -3,7 +3,7 @@
     <n-card class="auth-card">
       <n-form 
         class="auth-from"
-        @submit.prevent="auth"
+        @submit.prevent="logIn"
         :model="authParams"
       >
         <p class="auth-title">Вход</p>
@@ -60,9 +60,9 @@ const authParams = ref<AuthParams>({
   password: null
 })
 
-const auth = async () => {
+const logIn = async () => {
   try {
-    await employeeApiWorker.auth(authParams.value)
+    await employeeApiWorker.logIn(authParams.value)
     // state.commit("SAVE_EMPLOYEE_INFO", response)    
     router.push("/")
   } catch(err: any) {

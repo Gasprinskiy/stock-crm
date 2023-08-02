@@ -27,11 +27,26 @@ export class ApiMiddleware {
         res.cookie('token', token, 
             {
                 sameSite: 'none', 
-                secure: true, 
-                domain: "http://127.0.0.3:8080",
+                secure: true,
                 httpOnly: true
-            })
+            }
+        )
         return token
+    }
+
+    public SendExpiredCoockie(req: Request, res: Response) {
+        const token = req.cookies.token
+        const date = new Date()
+        res.cookie('token', token, 
+            {
+                sameSite: 'none', 
+                secure: true,
+                httpOnly: true,
+                expires: new Date(date.setDate(date.getDate() -1))
+            }
+        )
+
+        res.sendStatus(200)
     }
 
     public IsAuthorizedWithoutNext() {
@@ -80,7 +95,6 @@ export class ApiMiddleware {
 
     private async decodeToken(req: Request): Promise<any> {
         const token = req.cookies.token
-        console.log("cookies: ", req.cookies);
          
         if (token) {
             try {

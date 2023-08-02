@@ -13,7 +13,7 @@ import { translitLowercaseRuToEn } from "../../../tools/translit/index.js"
 
 interface EmployeeUsecaseInter {
     CreateEmployee(ts: pg.PoolClient, p: Employee): Promise<EmployeeAuthResult | Error>;
-    Auth(ts: pg.PoolClient, p: AuthParams): Promise<EmployeeAuthResult | Error>;
+    LogIn(ts: pg.PoolClient, p: AuthParams): Promise<EmployeeAuthResult | Error>;
 }
 
 export class EmployeeUsecase implements EmployeeUsecaseInter {
@@ -43,8 +43,8 @@ export class EmployeeUsecase implements EmployeeUsecaseInter {
         } 
     }
 
-    // Auth авторизация
-    public async Auth(ts: pg.PoolClient, p: AuthParams): Promise<EmployeeAuthResult> {        
+    // LogIn авторизация
+    public async LogIn(ts: pg.PoolClient, p: AuthParams): Promise<EmployeeAuthResult> {        
         const lf: LoggerFields = {
             "auth_login": p.login
         } 
