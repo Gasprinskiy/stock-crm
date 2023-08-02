@@ -55,16 +55,11 @@ export class EmployeeHandler implements DefaultApiHandler {
         logRequests(req, res, this.log)
         
         try {
-            await this.sessionManager.Begin()
-
             const response = await this.usecase.Employee.Auth(this.sessionManager.client, req.body.params)
+            await this.middleware.CreateJwtToken(response, res)
 
-            await this.sessionManager.Commit
-
-            const token = this.middleware.CreateJwtToken(response, res)
-            res.json(token)
+            res.json(response)
         } catch (err: any) {
-            this.sessionManager.Rollback()
             responseServerError(res, err, this.log)
         }
     }

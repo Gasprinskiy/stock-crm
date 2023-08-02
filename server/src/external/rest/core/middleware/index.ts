@@ -24,7 +24,13 @@ export class ApiMiddleware {
         }
         
         const token = jwt.sign(payload, this.token_key, {expiresIn: "7 days"})
-        res.cookie('token', token)
+        res.cookie('token', token, 
+            {
+                sameSite: 'none', 
+                secure: true, 
+                domain: "http://127.0.0.3:8080",
+                httpOnly: true
+            })
         return token
     }
 
@@ -73,7 +79,9 @@ export class ApiMiddleware {
     }
 
     private async decodeToken(req: Request): Promise<any> {
-        const token = req.cookies.token 
+        const token = req.cookies.token
+        console.log("cookies: ", req.cookies);
+         
         if (token) {
             try {
                 return jwt.verify(token, this.token_key, (err: any, decoded: any) => {
@@ -96,6 +104,6 @@ export class ApiMiddleware {
                 throw err
             }
         }
-        throw new Error('Пошел нахуй мудак')
+        throw MiddleWareErrorsMap.ErrNotAuthorized
     }
 }

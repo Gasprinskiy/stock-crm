@@ -1,0 +1,15 @@
+* {
+    &,
+    &::after,
+    &::before {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+}
+
+.contariner {
+    max-width: 1920px;
+    height: 100vh;
+    margin: auto;
+}

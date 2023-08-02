@@ -4,6 +4,8 @@ import cors from "cors"
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser"
 import { Logger } from "../../../tools/logger/index.js";
+import path from "path";
+import { fileURLToPath } from 'url';
 
 export class Server {
     app: express.Express;
@@ -20,7 +22,12 @@ export class Server {
     public Run() : express.Express {
         this.serverLog.Info("Server launch...")
         this.app.use(bodyParser.json());
-        this.app.use(cors())
+        this.app.use(cors({
+            origin: [
+                "http://127.0.0.3"
+            ],
+            credentials: true,
+        }))
         this.app.use(cookieParser())
 
         this.app.listen(this.port, () => this.serverLog.Info(`Server running at port: ${this.port}`));
