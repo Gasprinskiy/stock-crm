@@ -13,7 +13,7 @@ const config = new Config()
 const pgDbase = new PostgresDBase(config.PgConnectionString)
 const client = await pgDbase.Connect()
 
-const server = new Server(config.ServerPort)
+const server = new Server(config.ServerPort, config.ServerOrigin)
 const serverApp = await server.Run()
 
 const sessionManager = new SessionManager(client)

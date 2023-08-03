@@ -11,11 +11,13 @@ export class Server {
     app: express.Express;
     private serverLog: Logger; // TO:DO no file loger
     private port: number;
+    private origin: string[]
 
-    constructor(port: number) {
+    constructor(port: number, origin: string[]) {
         this.app = express()
         this.serverLog = new Logger("server-run")
         this.port = port
+        this.origin = origin
     }
 
     // запуск сервера
@@ -23,9 +25,7 @@ export class Server {
         this.serverLog.Info("Server launch...")
         this.app.use(bodyParser.json());
         this.app.use(cors({
-            origin: [
-                "http://127.0.0.3:8080"
-            ],
+            origin: this.origin,
             credentials: true,
         }))
         this.app.use(cookieParser())

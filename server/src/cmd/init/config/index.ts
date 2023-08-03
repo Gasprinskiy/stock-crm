@@ -4,7 +4,7 @@ import path from "path";
 import { fileURLToPath } from 'url';
 
 interface PgConfig { host: string; port: number; db: string; user: string; pass: string; }
-interface ServerConfig { port: number; token_key: string; time_zine: string; }
+interface ServerConfig { port: number; token_key: string; time_zine: string; origin: string[] }
 export class Config {
     private postgres: PgConfig;
     private server: ServerConfig;
@@ -22,6 +22,10 @@ export class Config {
 
     public get ServerPort(): number {
         return this.server.port
+    }
+
+    public get ServerOrigin(): string[] {
+        return this.server.origin
     }
 
     public get TokenKey() : string {        
