@@ -25,10 +25,6 @@ const isAuth = async () => {
   }
 }
 
-onBeforeMount(async () => {  
-  await isAuth()
-})
-
 router.beforeEach(async (to, from) => {
   if (to.name !== "Auth") {
     await isAuth()
