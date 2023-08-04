@@ -79,37 +79,37 @@ export class ProductHandler implements DefaultApiHandler {
         )
     }
 
-    private async getProductByID(req: Request, res: Response) {
+    private getProductByID(req: Request, res: Response): void {
         handleApiRequest((ts) => {
             return this.usecase.Product.GetProductByID(ts, Number(req.params.id))
         }, this.log, this.sessionManager, {req: req, res: res})
     }
 
-    private async createProduct(req: Request, res: Response) {
+    private createProduct(req: Request, res: Response): void {
         handleApiRequest((ts) => {
             return this.usecase.Product.CreateProduct(ts, req.body.params, req.user.login)
         }, this.log, this.sessionManager, {req: req, res: res})
     }
 
-    private async findProductList(req: Request, res: Response) {
+    private findProductList(req: Request, res: Response): void {
         handleApiRequest((ts) => {
             return this.usecase.Product.FindProductList(ts, req.body.params)
         }, this.log, this.sessionManager, {req: req, res: res})
     }
 
-    private sendProductsToStockRecieve(req: Request, res: Response) {
+    private sendProductsToStockRecieve(req: Request, res: Response): void {
         handleApiRequest((ts) => {
             return this.usecase.Product.SendProductsToStockRecieve(ts, req.body.params, req.user.login)
         }, this.log, this.sessionManager, {req: req, res: res})
     }
 
-    private findProductMovemntHistory(req: Request, res: Response) {
+    private findProductMovemntHistory(req: Request, res: Response): void {
         handleApiRequest((ts) => {
             return this.usecase.Product.FindProductMovemetnHistory(ts, req.body.params)
         }, this.log, this.sessionManager, {req, res})
     }
 
-    private recieveProduct(req: Request, res: Response) {
+    private recieveProduct(req: Request, res: Response): void {
         handleApiRequest((ts) => {
             return this.usecase.Product.RecieveProduct(ts, req.body.params, req.user.login)
         }, this.log, this.sessionManager, {req, res})

@@ -44,13 +44,13 @@ export class StockHandler implements DefaultApiHandler {
         )
     }
 
-    private findStockListByEmployeeID(req: Request, res: Response) {
+    private findStockListByEmployeeID(req: Request, res: Response): void {
         handleApiRequest((sm) => {
             return this.usecase.Stock.FindStockListByEmployeeID(sm, req.user.empl_id)
         }, this.log, this.sessionManager, {req: req, res: res})
     }
 
-    private loadStocks(req: Request, res: Response) {
+    private loadStocks(req: Request, res: Response): void {
         handleApiRequest((ts) => {
             return this.usecase.Stock.LoadStocks(ts)
         }, this.log, this.sessionManager, {req: req, res: res})

@@ -20,7 +20,6 @@ import { SessionManager } from "../../cmd/init/session_manager/index.js";
 // }
 
 export const handleApiRequest = async <T>(callback: (client: pg.PoolClient) => Promise<T>, log: Logger, sm: SessionManager, serverParams: {req: Request; res: Response;}) : Promise<void> => {
-    logRequests(serverParams.req, serverParams.res, log)
     try {
         await sm.Begin()
 

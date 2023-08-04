@@ -1,4 +1,4 @@
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import setTZ from 'set-tz';
 import cors from "cors"
 import bodyParser from "body-parser";
@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser"
 import { Logger } from "../../../tools/logger/index.js";
 import path from "path";
 import { fileURLToPath } from 'url';
+import { logRequests } from "../../../tools/external-generic/index.js";
 
 export class Server {
     app: express.Express;
@@ -29,7 +30,10 @@ export class Server {
             credentials: true,
         }))
         this.app.use(cookieParser())
-
+        this.app.use((req: Request, res: Response, next: NextFunction) => {
+            logRequests(req, res, this.serverLog)
+            next()
+        })
         this.app.listen(this.port, () => this.serverLog.Info(`Server running at port: ${this.port}`));
 
         return this.app
