@@ -1,79 +1,119 @@
 import jwt from 'jsonwebtoken';
+import Cache from "node-cache"
 import { NextFunction, Request, Response } from 'express';
 import { EmployeeAuthResult } from '../../../../internal/entity/employee/entity/index.js';
 import { AccessRight } from '../../../../internal/entity/employee/constant/index.js';
 import { Logger } from '../../../../tools/logger/index.js';
-import { logRequests, responseServerError } from '../../../../tools/external-generic/index.js';
+import { responseServerError } from '../../../../tools/external-generic/index.js';
 import { InternalErrorsMap } from '../../../../internal/entity/global/error/index.js';
 import { ApiUser } from '../../../../internal/entity/rest/entity/index.js';
 import { MiddleWareErrorsMap } from '../../../../internal/entity/middleware/errors/index.js';
 
 export class ApiMiddleware {
-    private token_key: string;
     private log: Logger;
-    constructor(token_key: string) {
-        this.token_key = token_key;
+
+    private token_key: string;
+    private session_life_day: number;
+    private session_life_seconds: number;
+    private employeeChache: Cache;
+
+    constructor(token_key: string, session_life_day: number) {
         this.log = new Logger("middleware")
+
+        this.token_key = token_key;
+        this.session_life_day = session_life_day;
+        this.session_life_seconds = 86400 * session_life_day
+        this.employeeChache = new Cache({
+            stdTTL: this.session_life_seconds,
+            checkperiod: 120,
+            useClones: false
+        })
     }
 
-    public CreateJwtToken(empl: EmployeeAuthResult, res: Response): string {  
+    public RemoveEmpolyeeFromCache(empl_id: number): void {
+        this.employeeChache.del(empl_id)
+    }
+
+    public SetEmpolyeeInCache(empl_id: number): void {
+        this.employeeChache.set(empl_id, true)
+    }
+
+    public EmployeeInChache(empl_id: number): boolean | undefined {
+        return this.employeeChache.get(empl_id)
+    }
+
+    public SetJwtToken(empl: EmployeeAuthResult, req: Request, res: Response): void {  
         const payload : ApiUser = {
             empl_id: empl.empl_id,
             ar_id: empl.ar_id,
             login: empl.login,
         }
-        
-        const token = jwt.sign(payload, this.token_key, {expiresIn: "7 days"})
-        res.cookie('token', token, 
-            {
-                sameSite: 'none', 
-                secure: true,
-                httpOnly: true
-            }
-        )
-        return token
+ 
+        const token = jwt.sign(payload, this.token_key, {expiresIn: this.session_life_seconds})
+        if (!token) {
+            throw InternalErrorsMap.ErrInternalError
+        }
+
+        const now = new Date()
+        res.cookie('token', token, {
+            sameSite: 'none', 
+            secure: true,
+            httpOnly: true,
+            expires: new Date(now.setDate(now.getDay() + this.session_life_day)),
+        })
     }
 
-    public SendExpiredCoockie(req: Request, res: Response) {
+    public ResetCoockie(req: Request, res: Response, next: NextFunction): void  {
+        console.log("FUCK");
+        
         const token = req.cookies.token
-        const date = new Date()
+        const now = new Date()
         res.cookie('token', token, 
             {
                 sameSite: 'none', 
                 secure: true,
                 httpOnly: true,
-                expires: new Date(date.setDate(date.getDate() -1))
+                expires: new Date(now.setDate(now.getDate() -1))
             }
         )
-
-        res.sendStatus(200)
+        return next()
     }
 
-    public IsAuthorizedWithoutNext() {
+    public IsAuthorizedWithoutNext(): Function {
         return (req: Request, res: Response, next: NextFunction) => {
-            logRequests(req, res, this.log)
             this.IsAuthorized(req, res, next, false)
         }
     }
 
     public async IsAuthorized(req: Request, res: Response, next: NextFunction, callNext: boolean = true): Promise<void> {        
         try {
-            await this.decodeToken(req)            
-            if (!callNext) {
-                res.statusCode = 200
-                res.json({message: "authorized"})
+            const decoded = await this.decodeToken(req)
+            if (!this.EmployeeInChache(decoded.empl_id)) {
+                throw MiddleWareErrorsMap.ErrNotAuthorized
             }
 
+            if (!callNext) {
+                res.sendStatus(200)
+            }
             return next()   
         } catch(err: any) {
             responseServerError(res, err, this.log)
         }
     }
 
-    public CheckAccessRight(...ableAccessRights: AccessRight[]) {
+    public CheckAccessRight(...ableAccessRights: AccessRight[]): Function {
         return (req: Request, res: Response, next: NextFunction) => {
             this.checkAccessRight(req, res, next, ...ableAccessRights)
         } 
+    }
+
+    public async DecodeToken(req: Request, res: Response, next: NextFunction) : Promise<void> {
+        try {
+            await this.decodeToken(req)
+            return next()
+        } catch(err: any) {
+            responseServerError(res, err, this.log)
+        }
     }
 
     private async checkAccessRight(req: Request, res: Response, next: NextFunction, ...ableAccessRights: AccessRight[]) : Promise<void> {  
@@ -98,7 +138,7 @@ export class ApiMiddleware {
          
         if (token) {
             try {
-                return jwt.verify(token, this.token_key, (err: any, decoded: any) => {
+                return await jwt.verify(token, this.token_key, (err: any, decoded: any) => {
                     if (err) {
                         throw err
                     }

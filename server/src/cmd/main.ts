@@ -21,7 +21,7 @@ const sessionManager = new SessionManager(client)
 const repository = new Repository()
 const usecase = new Usecase(repository)
 
-const middleware = new ApiMiddleware(config.TokenKey)
+const middleware = new ApiMiddleware(config.TokenKey, config.SessionLifeDay)
 
 const exteranl = new ApiHandler({
     app: serverApp,
