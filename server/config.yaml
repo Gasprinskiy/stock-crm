@@ -9,5 +9,6 @@ server:
   port: 3000
   origin: 
     http://127.0.0.3:8080
+  session_life_day: 5
   token_key: SAY_HELLO_TO_MY_LITTLE_FRIEND
   time_zone: "Asia/Tashkent"

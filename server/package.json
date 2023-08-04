@@ -53,6 +53,7 @@
     "jsonwebtoken": "^9.0.0",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.43",
+    "node-cache": "^5.1.2",
     "node-dependency-injection": "^3.0.5",
     "pg": "^8.11.1",
     "pg-promise": "^11.4.3",
