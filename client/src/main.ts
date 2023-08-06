@@ -1,7 +1,8 @@
 import './assets/style.scss'
 import { createApp } from 'vue'
 import router from './router'
-import App from './App.vue'
+import store from './store'
+import App from './AppWrapper.vue'
 import apiInjectionMap from './api-worker'
 
 const app = createApp(App)
@@ -12,5 +13,5 @@ Object.keys(apiInjectionMap).forEach(injection => {
 
 app
 .use(router)
-// .use(store)
+.use(store)
 .mount('#app')

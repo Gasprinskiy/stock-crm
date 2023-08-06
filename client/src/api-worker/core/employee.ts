@@ -1,14 +1,14 @@
 import { InjectionKey } from 'vue'
 import { EmployeeAuthResult } from "../../entity/employee/entity";
 import { AuthParams } from "../../entity/employee/params";
-import { handleApiPostRequest, handleApiGetRequest } from "../helpers";
+import { handleApiPostRequest, handleApiGetRequest } from "../axios";
 
 export const injectionKey = Symbol() as InjectionKey<EmployeeApiWorker>
 
 export interface EmployeeApiWorker {
     logIn(params: AuthParams): Promise<EmployeeAuthResult>;
     logOut() : Promise<void>;
-    isAuth(): Promise<void>;
+    getEmployeeInfo(): Promise<EmployeeAuthResult>;
 }
 
 export class EmployeeApiWorkerImpl implements EmployeeApiWorker {
@@ -20,8 +20,8 @@ export class EmployeeApiWorkerImpl implements EmployeeApiWorker {
         return handleApiPostRequest("log_out")
     }
 
-    isAuth(): Promise<void> {
-        return handleApiGetRequest('is_auth')
+    getEmployeeInfo(): Promise<EmployeeAuthResult> {
+        return handleApiGetRequest('employee_info')
     }
 
 }
