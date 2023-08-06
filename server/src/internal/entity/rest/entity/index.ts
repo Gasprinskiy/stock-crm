@@ -17,10 +17,3 @@ export interface MethodLog {
     params: any;
     response_time: number;
 }
-
-
-export interface ApiUser {
-    empl_id: number;
-    ar_id: AccessRight;
-    login: string;
-}

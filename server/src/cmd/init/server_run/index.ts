@@ -24,12 +24,13 @@ export class Server {
     // запуск сервера
     public Run() : express.Express {
         this.serverLog.Info("Server launch...")
+        this.app.use(cookieParser())
         this.app.use(bodyParser.json());
         this.app.use(cors({
             origin: this.origin,
             credentials: true,
+            exposedHeaders: ["Authorization"]
         }))
-        this.app.use(cookieParser())
         this.app.use((req: Request, res: Response, next: NextFunction) => {
             logRequests(req, res, this.serverLog)
             next()

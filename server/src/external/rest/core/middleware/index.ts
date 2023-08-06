@@ -6,7 +6,6 @@ import { AccessRight } from '../../../../internal/entity/employee/constant/index
 import { Logger } from '../../../../tools/logger/index.js';
 import { responseServerError } from '../../../../tools/external-generic/index.js';
 import { InternalErrorsMap } from '../../../../internal/entity/global/error/index.js';
-import { ApiUser } from '../../../../internal/entity/rest/entity/index.js';
 import { MiddleWareErrorsMap } from '../../../../internal/entity/middleware/errors/index.js';
 
 export class ApiMiddleware {
@@ -42,53 +41,24 @@ export class ApiMiddleware {
         return this.employeeChache.get(empl_id)
     }
 
-    public SetJwtToken(empl: EmployeeAuthResult, req: Request, res: Response): void {  
-        const payload : ApiUser = {
-            empl_id: empl.empl_id,
-            ar_id: empl.ar_id,
-            login: empl.login,
-        }
- 
-        const token = jwt.sign(payload, this.token_key, {expiresIn: this.session_life_seconds})
+    public SetJwtToken(empl: EmployeeAuthResult, res: Response): void { 
+        const token = jwt.sign(empl, this.token_key, {expiresIn: this.session_life_seconds})
         if (!token) {
             throw InternalErrorsMap.ErrInternalError
         }
 
-        const now = new Date()
-        res.cookie('token', token, {
-            sameSite: 'none', 
-            secure: true,
-            httpOnly: true,
-            expires: new Date(now.setDate(now.getDay() + this.session_life_day)),
-        })
+        res.setHeader("authorization", `Bearer ${token}`)
     }
 
-    public ResetCoockie(req: Request, res: Response, next: NextFunction): void  {
-        console.log("FUCK");
-        
-        const token = req.cookies.token
-        const now = new Date()
-        res.cookie('token', token, 
-            {
-                sameSite: 'none', 
-                secure: true,
-                httpOnly: true,
-                expires: new Date(now.setDate(now.getDate() -1))
-            }
-        )
+    public ResetCoockie(req: Request, res: Response, next: NextFunction): void  {        
+        res.clearCookie('token')
         return next()
-    }
-
-    public IsAuthorizedWithoutNext(): Function {
-        return (req: Request, res: Response, next: NextFunction) => {
-            this.IsAuthorized(req, res, next, false)
-        }
     }
 
     public async IsAuthorized(req: Request, res: Response, next: NextFunction, callNext: boolean = true): Promise<void> {        
         try {
-            const decoded = await this.decodeToken(req)
-            if (!this.EmployeeInChache(decoded.empl_id)) {
+            const decoded = await this.decodeToken(req)            
+            if (!this.EmployeeInChache(decoded.empl_id)) {                
                 throw MiddleWareErrorsMap.ErrNotAuthorized
             }
 
@@ -124,7 +94,7 @@ export class ApiMiddleware {
             }
 
             if (!ableAccessRights.includes(decodedToked.ar_id)) {
-                throw InternalErrorsMap.ErrNoAccesRight
+                throw MiddleWareErrorsMap.ErrNoAccesRight
             }
             
             return next()
@@ -133,9 +103,8 @@ export class ApiMiddleware {
         }
     }
 
-    private async decodeToken(req: Request): Promise<any> {
-        const token = req.cookies.token
-         
+    private async decodeToken(req: Request): Promise<any> {        
+        const token = req.headers.authorization?.split(" ")[1]        
         if (token) {
             try {
                 return await jwt.verify(token, this.token_key, (err: any, decoded: any) => {
@@ -160,4 +129,6 @@ export class ApiMiddleware {
         }
         throw MiddleWareErrorsMap.ErrNotAuthorized
     }
+
+
 }

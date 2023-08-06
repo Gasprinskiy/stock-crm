@@ -1,4 +1,4 @@
-import { ApiUser } from "../../rest/entity/index.js";
+import { EmployeeAuthResult } from "../../employee/entity/index.js";
 
 export interface LoadParams {
   limit: number;
@@ -12,7 +12,7 @@ export interface CountResponse {
 declare global {
     namespace Express {
       export interface Request {
-        user: ApiUser;
+        user: EmployeeAuthResult;
       }
     }
 }

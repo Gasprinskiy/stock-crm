@@ -61,7 +61,6 @@ export class EmployeeUsecase implements EmployeeUsecaseInter {
             return {
                 empl_id: response.empl_id,
                 ar_id: response.ar_id,
-                fio: response.fio,
                 login: response.login
             }
         } catch(err: any) {

@@ -2,7 +2,7 @@ import express, { NextFunction } from 'express';
 
 import { ApiMethod, DefaultApiHandler } from '../../../internal/entity/rest/entity/index.js';
 import { Usecase } from "../../../internal/usecase/index.js";
-import {  Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { ApiMiddleware } from './middleware/index.js';
 import { responseServerError, handleApiRequest } from '../../../tools/external-generic/index.js';
 import { Logger } from '../../../tools/logger/index.js';
@@ -44,7 +44,6 @@ export class EmployeeHandler implements DefaultApiHandler {
             this.middleware.ResetCoockie.bind(this.middleware),
             this.middleware.DecodeToken.bind(this.middleware),
             this.logOut.bind(this)
-
         )
 
         this.app.post(
@@ -54,15 +53,16 @@ export class EmployeeHandler implements DefaultApiHandler {
         )
 
         this.app.get(
-            "/is_auth",
-            this.middleware.IsAuthorizedWithoutNext().bind(this.middleware)
+            "/employee_info",
+            this.middleware.IsAuthorized.bind(this.middleware),
+            this.employeeInfo.bind(this)
         )
     }
 
     private async logIn(req: Request, res: Response) : Promise<void> { 
         try {
             const response = await this.usecase.Employee.LogIn(this.sessionManager.client, req.body.params)
-            await this.middleware.SetJwtToken(response, req, res)
+            await this.middleware.SetJwtToken(response, res)
             await this.middleware.SetEmpolyeeInCache(response.empl_id)
             res.json(response)
         } catch (err: any) {
@@ -70,9 +70,13 @@ export class EmployeeHandler implements DefaultApiHandler {
         }
     }
 
-    private logOut(req: Request, res: Response) {
+    private logOut(req: Request, res: Response) : void {
         this.middleware.RemoveEmpolyeeFromCache(req.user.empl_id)
         res.sendStatus(200)
+    }
+
+    private employeeInfo(req: Request, res: Response) : void {
+        res.json(req.user)
     }
 
     private createEmployee(req: Request, res: Response): void {
