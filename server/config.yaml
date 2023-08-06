@@ -5,6 +5,11 @@ postgres:
   db: test_db
   user: test_db
   pass: test_db
+redis:
+  host: redis
+  pass: redis_password
+  user: redis_user
+  port: 6379
 server:
   port: 3000
   origin: 

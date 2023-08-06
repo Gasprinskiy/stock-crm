@@ -5,19 +5,26 @@ import { fileURLToPath } from 'url';
 
 interface PgConfig { host: string; port: number; db: string; user: string; pass: string; }
 interface ServerConfig { port: number; token_key: string; time_zine: string; origin: string[], session_life_day: number }
+interface RedisConfig{ host: string; port: number; user: string; pass: string;  }
 export class Config {
     private postgres: PgConfig;
     private server: ServerConfig;
+    private redis: RedisConfig;
 
     constructor() {
         const config = this.initConfig()
 
         this.postgres = config.postgres
-        this.server = config.server   
+        this.server = config.server
+        this.redis = config.redis   
     }
 
     public get PgConnectionString(): string {
         return `postgres://${this.postgres.user}:${this.postgres.pass}@${this.postgres.host}:${this.postgres.port}/${this.postgres.db}`
+    }
+
+    public get RedisConnectionString(): string {
+        return `redis://${this.redis.user}:${this.redis.pass}@${this.redis.host}:${this.redis.port}`
     }
 
     public get ServerPort(): number {
@@ -40,7 +47,7 @@ export class Config {
         return this.server.time_zine
     }
 
-    private initConfig() : {postgres: PgConfig, server: ServerConfig} {
+    private initConfig() : {postgres: PgConfig, server: ServerConfig, redis: RedisConfig} {
         const { env } = process
         if (!env.CONF_PATH) {
             process.exit(1)

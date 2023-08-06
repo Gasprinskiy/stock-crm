@@ -7,38 +7,37 @@ import { Logger } from '../../../../tools/logger/index.js';
 import { responseServerError } from '../../../../tools/external-generic/index.js';
 import { InternalErrorsMap } from '../../../../internal/entity/global/error/index.js';
 import { MiddleWareErrorsMap } from '../../../../internal/entity/middleware/errors/index.js';
+import { EmployeeCacheInter } from '../../../../internal/repository/redis/employee_chache.js';
 
 export class ApiMiddleware {
     private log: Logger;
 
     private token_key: string;
-    private session_life_day: number;
     private session_life_seconds: number;
-    private employeeChache: Cache;
+    private employeeChache: EmployeeCacheInter;
 
-    constructor(token_key: string, session_life_day: number) {
+    constructor(params:{
+        token_key: string, 
+        session_life_day: number
+        employeeChache: EmployeeCacheInter
+    }){
         this.log = new Logger("middleware")
 
-        this.token_key = token_key;
-        this.session_life_day = session_life_day;
-        this.session_life_seconds = 86400 * session_life_day
-        this.employeeChache = new Cache({
-            stdTTL: this.session_life_seconds,
-            checkperiod: 120,
-            useClones: false
-        })
+        this.token_key = params.token_key;
+        this.session_life_seconds = 86400 * params.session_life_day
+        this.employeeChache = params.employeeChache
     }
 
     public RemoveEmpolyeeFromCache(empl_id: number): void {
-        this.employeeChache.del(empl_id)
+        this.employeeChache.Remove(empl_id)
     }
 
     public SetEmpolyeeInCache(empl_id: number): void {
-        this.employeeChache.set(empl_id, true)
+        this.employeeChache.Set(empl_id, this.session_life_seconds)
     }
 
-    public EmployeeInChache(empl_id: number): boolean | undefined {
-        return this.employeeChache.get(empl_id)
+    public async EmployeeInChache(empl_id: number): Promise<boolean> {
+        return await this.employeeChache.InChache(empl_id)
     }
 
     public SetJwtToken(empl: EmployeeAuthResult, res: Response): void { 
@@ -57,8 +56,9 @@ export class ApiMiddleware {
 
     public async IsAuthorized(req: Request, res: Response, next: NextFunction, callNext: boolean = true): Promise<void> {        
         try {
-            const decoded = await this.decodeToken(req)            
-            if (!this.EmployeeInChache(decoded.empl_id)) {                
+            const decoded = await this.decodeToken(req) 
+            const inCache = this.EmployeeInChache(decoded.empl_id)           
+            if (!inCache) {                            
                 throw MiddleWareErrorsMap.ErrNotAuthorized
             }
 
