@@ -23,8 +23,8 @@ export class Config {
         return `postgres://${this.postgres.user}:${this.postgres.pass}@${this.postgres.host}:${this.postgres.port}/${this.postgres.db}`
     }
 
-    public get RedisConnectionString(): string {
-        return `redis://${this.redis.user}:${this.redis.pass}@${this.redis.host}:${this.redis.port}`
+    public get RedisConnectionString(): string {        
+        return `redis://:${this.redis.pass}@${this.redis.host}:${this.redis.port}`
     }
 
     public get ServerPort(): number {

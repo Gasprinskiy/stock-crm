@@ -57,7 +57,8 @@ export class ApiMiddleware {
     public async IsAuthorized(req: Request, res: Response, next: NextFunction, callNext: boolean = true): Promise<void> {        
         try {
             const decoded = await this.decodeToken(req) 
-            const inCache = this.EmployeeInChache(decoded.empl_id)           
+            const inCache = await this.EmployeeInChache(decoded.empl_id)
+            
             if (!inCache) {                            
                 throw MiddleWareErrorsMap.ErrNotAuthorized
             }
