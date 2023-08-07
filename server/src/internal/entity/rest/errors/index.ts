@@ -23,7 +23,7 @@ const ErrNoData: ApiError = {
 }
 
 const ErrWrongLoginOrPassword: ApiError = {
-    code: 500,
+    code: 404,
     name: "ErrWrongLoginOrPassword",
     message: "не верный логин или пароль"
 }

@@ -100,7 +100,8 @@ export class ApiMiddleware {
     }
 
     private async decodeToken(req: Request): Promise<any> {        
-        const token = req.headers.authorization?.split(" ")[1]        
+        const token = req.headers.authorization?.split(" ")[1]
+                
         if (token) {
             try {
                 return await jwt.verify(token, this.token_key, (err: any, decoded: any) => {
