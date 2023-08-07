@@ -1,26 +1,34 @@
 <template>
-  <router-view v-if="showRouterView"/>
-  <n-empty
-    v-if="hasConnectionError"
-    class="full-centered" 
-    description="Что-то пошло не так"
-  >
-    <template #icon>
-      <n-icon>
-        <EmojiSad24Regular/>
-      </n-icon>
-    </template>
-    <template #extra>
-      <p class="extra">
-        Проблемы соеденения с сервером
-      </p>
-      <n-button
-        @click="getEmployeeInfo"
+  <div class="container">
+    <div class="router-view">
+      <router-view v-if="showRouterView"/>
+    </div>
+    <div 
+      v-if="hasConnectionError" 
+      class="connetion-error full-centered"
+    >
+      <n-empty
+        class="full-centered" 
+        description="Что-то пошло не так"
       >
-        Обновить
-      </n-button>
-    </template>
-  </n-empty>
+        <template #icon>
+          <n-icon>
+            <EmojiSad24Regular/>
+          </n-icon>
+        </template>
+        <template #extra>
+          <p class="extra">
+            Проблемы соеденения с сервером
+          </p>
+          <n-button
+            @click="getEmployeeInfo"
+          >
+            Обновить
+          </n-button>
+        </template>
+      </n-empty>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -55,7 +63,7 @@ const getEmployeeInfo = async () => {
   }
 }
 
-appBus.on('unauthorized-api-request', () => {
+appBus.on('unauthorized-api-request', () => {  
   if (notAuthRoute.value) {
     notification.warning({
       title: "Необходимо авторизоватся в системе",
@@ -96,9 +104,7 @@ appBus.on('api-request-finished-successful', () => {
   hasConnectionError.value = false
 })
 
-appBus.on('api-request-finished-unsuccessful', (message) => {
-  console.log(message);
-  
+appBus.on('api-request-finished-unsuccessful', () => {
   loading.error()
   appBus.all.clear()
   apiRequestDone.value = true
@@ -115,10 +121,17 @@ onBeforeMount(async () => await getEmployeeInfo())
 </script>
 
 <style scoped lang="scss">
-  .extra {
-    color: var(--n-text-color);
-    font-size: 14px;
-    min-width: 250px;
-    margin-bottom: 10px;
+  .router-view {
+    width: 100%;
+    height: 100%;
+  }
+
+  .connetion-error {
+    .extra {
+      color: var(--n-text-color);
+      font-size: 14px;
+      min-width: 250px;
+      margin-bottom: 10px;
+    }
   }
 </style>
