@@ -41,7 +41,6 @@ export class EmployeeHandler implements DefaultApiHandler {
 
         this.app.post(
             "/log_out", 
-            this.middleware.ResetCoockie.bind(this.middleware),
             this.middleware.DecodeToken.bind(this.middleware),
             this.logOut.bind(this)
         )

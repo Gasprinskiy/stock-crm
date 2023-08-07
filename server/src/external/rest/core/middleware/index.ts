@@ -49,11 +49,6 @@ export class ApiMiddleware {
         res.setHeader("authorization", `Bearer ${token}`)
     }
 
-    public ResetCoockie(req: Request, res: Response, next: NextFunction): void  {        
-        res.clearCookie('token')
-        return next()
-    }
-
     public async IsAuthorized(req: Request, res: Response, next: NextFunction, callNext: boolean = true): Promise<void> {        
         try {
             const decoded = await this.decodeToken(req) 
