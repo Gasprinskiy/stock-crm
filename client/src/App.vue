@@ -38,7 +38,8 @@ import { useNotification, useLoadingBar } from 'naive-ui';
 import { useStore } from "vuex";
 import { NEmpty, NButton, NIcon } from 'naive-ui';
 import { EmojiSad24Regular } from "@vicons/fluent"
-import apiInjectionMap from './api-worker'
+import { useApiRequestHandler } from "./composables/api-request";
+import apiInjectionMap from './api_worker'
 import appBus from "./shared/app-bus";
 import mutationTypes from "./store/mutation/types";
 
@@ -56,11 +57,10 @@ const notAuthRoute = computed(() => route.name !== "Auth")
 const showRouterView = computed(() => apiRequestDone.value && !hasConnectionError.value)
 
 
-const getEmployeeInfo = async () => {
-  const response = await employeeApiWorker.getEmployeeInfo()
-  if (response) {
-    store.commit(mutationTypes.SET_EMPLOYEE_INFO, response) 
-  }
+const handlerEmployeeInfoRequest = useApiRequestHandler(employeeApiWorker.getEmployeeInfo)
+const getEmployeeInfo = async () : Promise<void> => {
+  const info = await handlerEmployeeInfoRequest()
+  store.commit(mutationTypes.SET_EMPLOYEE_INFO, info)
 }
 
 appBus.on('unauthorized-api-request', () => {  

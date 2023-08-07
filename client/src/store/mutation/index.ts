@@ -4,7 +4,7 @@ import { EmployeeAuthResult } from "../../entity/employee/entity";
 import types from "./types";
 
 export const mutations: MutationTree<State> = {
-    [types.SET_EMPLOYEE_INFO](state: State, payload: EmployeeAuthResult) {
+    [types.SET_EMPLOYEE_INFO](state: State, payload: EmployeeAuthResult | null) {
         state.employeeInfo = payload
     }
 }

@@ -43,32 +43,30 @@
 </template>
 
 <script setup lang="ts">
-import { NCard, NForm, NFormItem, NInput, NButton, useNotification, NSkeleton } from "naive-ui"
+import { NCard, NForm, NFormItem, NInput, NButton } from "naive-ui"
 import { inject, ref } from "vue"
-import { useRouter } from "vue-router"
-import apiInjectionMap from '../../api-worker'
+import { useStore } from "vuex"
 import { AuthParams } from "../../entity/employee/params"
+import { useApiRequestHandler } from "../../composables/api-request";
+import mutationTypes from "../../store/mutation/types";
+import apiInjectionMap from '../../api_worker'
+import { useRouter } from "vue-router";
 
 const employeeApiWorker = inject(apiInjectionMap.employee.key)
-const notification = useNotification()
 const router = useRouter()
+const store = useStore()
 
 const authParams = ref<AuthParams>({
   login: null,
   password: null
 })
 
-const logIn = async () => {
-  try {
-    await employeeApiWorker.logIn(authParams.value)
-    // state.commit("SAVE_EMPLOYEE_INFO", response)    
+const handleLoginRequest = useApiRequestHandler(employeeApiWorker.logIn, authParams.value)
+const logIn = async () => {  
+  const info = await handleLoginRequest()
+  store.commit(mutationTypes.SET_EMPLOYEE_INFO, info)
+  if (info) {
     router.push("/")
-  } catch(err: any) {
-    notification.error({
-      content: err,
-      duration: 3000,
-      keepAliveOnHover: true,
-    })
   }
 }
 
