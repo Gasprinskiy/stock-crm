@@ -3,7 +3,7 @@ import { createApp } from 'vue'
 import router from './router'
 import store from './store'
 import App from './AppWrapper.vue'
-import apiInjectionMap from './api-worker'
+import apiInjectionMap from './api_worker'
 
 const app = createApp(App)
 

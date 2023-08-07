@@ -12,7 +12,7 @@ const instance = axios.create({
 instance.interceptors.request
 .use(
     (request) => {
-        appBus.emit('api-request-started')
+        appBus.emit('api-request-started')    
         if (document.cookie) {
             request.headers.Authorization = document.cookie
         }
