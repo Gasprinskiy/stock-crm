@@ -47,7 +47,7 @@ import { NCard, NForm, NFormItem, NInput, NButton } from "naive-ui"
 import { inject, ref } from "vue"
 import { useStore } from "vuex"
 import { AuthParams } from "../../entity/employee/params"
-import { useApiRequestHandler } from "../../composables/api-request";
+import { useApiRequestHandler } from "../../composables/api_request";
 import mutationTypes from "../../store/mutation/types";
 import apiInjectionMap from '../../api_worker'
 import { useRouter } from "vue-router";

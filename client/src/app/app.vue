@@ -1,47 +1,32 @@
 <template>
   <div class="container">
-    <div class="router-view">
-      <router-view v-if="showRouterView"/>
-    </div>
     <div 
-      v-if="hasConnectionError" 
-      class="connetion-error full-centered"
+      v-if="showRouterView"
+      class="router-view" 
     >
-      <n-empty
-        class="full-centered" 
-        description="Что-то пошло не так"
-      >
-        <template #icon>
-          <n-icon>
-            <EmojiSad24Regular/>
-          </n-icon>
-        </template>
-        <template #extra>
-          <p class="extra">
-            Проблемы соеденения с сервером
-          </p>
-          <n-button
-            @click="getEmployeeInfo"
-          >
-            Обновить
-          </n-button>
-        </template>
-      </n-empty>
+      <side-bar v-if="notAuthRoute"/>
+      <router-view/>
     </div>
+    <connection-error
+      v-if="hasConnectionError"
+      @update="getEmployeeInfo"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { inject, onBeforeMount, computed, ref } from "vue"
 import { useRouter, useRoute } from "vue-router"
-import { useNotification, useLoadingBar } from 'naive-ui';
 import { useStore } from "vuex";
-import { NEmpty, NButton, NIcon } from 'naive-ui';
-import { EmojiSad24Regular } from "@vicons/fluent"
-import { useApiRequestHandler } from "./composables/api-request";
-import apiInjectionMap from './api_worker'
-import appBus from "./shared/app-bus";
-import mutationTypes from "./store/mutation/types";
+import { useNotification, useLoadingBar } from 'naive-ui';
+import { useApiRequestHandler } from "../composables/api_request";
+
+import apiInjectionMap from '../api_worker'
+import appBus from "../shared/app-bus";
+import mutationTypes from "../store/mutation/types";
+
+import ConnectionError from "./components/connection_error.vue"
+import SideBar from "./components/side_bar.vue"
 
 const employeeApiWorker = inject(apiInjectionMap.employee.key)
 const router = useRouter()
@@ -124,14 +109,6 @@ onBeforeMount(async () => await getEmployeeInfo())
   .router-view {
     width: 100%;
     height: 100%;
-  }
-
-  .connetion-error {
-    .extra {
-      color: var(--n-text-color);
-      font-size: 14px;
-      min-width: 250px;
-      margin-bottom: 10px;
-    }
+    display: flex;
   }
 </style>
