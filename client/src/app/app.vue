@@ -2,7 +2,7 @@
   <div class="container">
     <div class="app-view" v-if="showRouterView">
       <div class="app-bars" v-if="notAuthRoute">
-        <header-bar :employeeLogin="store.employeeInfo?.login"/>
+        <header-bar/>
         <side-bar/>
       </div>
       <div :class="routerViewClass">
@@ -20,11 +20,11 @@
 import { inject, onBeforeMount, computed, ref } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import { useNotification, useLoadingBar } from 'naive-ui';
-import { useApiRequestHandler } from "../composables/api_request";
-import { useUserStore } from "../store/"
+import { useApiRequestHandler } from "@/composables/api_request";
+import { useUserStore } from "@/store/"
 
-import { EmployeeApiWorkerInjectionKey } from '../api_worker'
-import appBus from "../shared/app-bus";
+import { EmployeeApiWorkerInjectionKey } from '@/api_worker'
+import appBus from "@/shared/app-bus";
 
 import ConnectionError from "./components/connection_error.vue"
 import SideBar from "./components/side_bar.vue"

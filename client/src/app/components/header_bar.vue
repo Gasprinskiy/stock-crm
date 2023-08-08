@@ -16,7 +16,7 @@
                         <PersonCircleOutline/>
                     </n-icon>
                 </template>
-                {{ props.employeeLogin }}
+                {{ store.employeeInfo?.login }}
             </n-button>
         </n-dropdown>
     </n-layout-header>
@@ -29,6 +29,7 @@ import type { MenuOption } from 'naive-ui'
 import { PersonCircleOutline, LogOutOutline } from "@vicons/ionicons5";
 
 import { useRouter, useRoute } from 'vue-router';
+import { useUserStore } from "@/store/"
 import { useRenderIcon } from '@/composables/render_icon';
 import { useApiRequestHandler } from '@/composables/api_request';
 
@@ -37,6 +38,7 @@ import { EmployeeApiWorkerInjectionKey } from '@/api_worker'
 const props = defineProps({
     employeeLogin: String
 })
+const store = useUserStore()
 const router = useRouter()
 const route = useRoute()
 const renderIcon = useRenderIcon()
@@ -60,6 +62,7 @@ const handleOptionSelect = async (key: string) : Promise<void> => {
     switch (key) {
         case "/log_out":
             await logOut()
+            store.$reset()
             router.push("/auth")
             break;
         default:
