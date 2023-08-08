@@ -21,7 +21,8 @@ export class EmployeeRepo implements EmployeeRepoInter {
         const sqlQuery = `
         SELECT e.empl_id, e.ar_id, e.fio, e.login, e.password
         FROM employees e
-        WHERE e.login = $1`
+        WHERE e.login = $1
+        ADNE e.deleted = false`
 
         return get(ts, sqlQuery, [login])
     }
