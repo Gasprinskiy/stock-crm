@@ -1,16 +1,19 @@
 import { InjectionKey } from 'vue'
-import {
-    EmployeeApiWorker,
-    EmployeeApiWorkerImpl
-} from './core/employee'
+import { EmployeeApiWorker, EmployeeApiWorkerImpl } from './core/employee'
+import { StockApiWorker, StockApiWorkerImpl } from './core/stock'
 
-type Injection = {[key: string]: {key: InjectionKey<any>, implementation: object}}
+type InjectionKeys = {[key: string]: InjectionKey<any>}
+type InjectionImpl = {[key: string]: object}
 
-export const InjectionKeysMap: Injection = {
-    employee: {
-        key: Symbol() as InjectionKey<EmployeeApiWorker>,
-        implementation: new EmployeeApiWorkerImpl()
-    },
+export const EmployeeApiWorkerInjectionKey = Symbol() as InjectionKey<EmployeeApiWorker>
+export const StockApiWorkerInjectionKey = Symbol() as InjectionKey<StockApiWorker>
+
+export const InjectionKeysMap: InjectionKeys = {
+    employee: EmployeeApiWorkerInjectionKey,
+    stock: StockApiWorkerInjectionKey
 }
 
-export default InjectionKeysMap
+export const InjectionImplMap : InjectionImpl = {
+    employee: new EmployeeApiWorkerImpl(),
+    stock: new StockApiWorkerImpl()
+}
