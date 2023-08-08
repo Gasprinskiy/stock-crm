@@ -2,12 +2,12 @@ import pg from "pg";
 import { Employee, EmployeeAuthResult } from '../../entity/employee/entity/index.js';
 import { get, insert } from "../../../tools/repository-generic/index.js";
 
-export interface EmployeeRepoInter {
+export interface EmployeeRepository {
     CreateEmployee(ts: pg.PoolClient, p: Employee): Promise<EmployeeAuthResult>;
     GetEmployeeByLogin(ts: pg.PoolClient, login: string) : Promise<Employee>;
 }
 
-export class EmployeeRepo implements EmployeeRepoInter {
+export class EmployeeRepositoryImpl implements EmployeeRepository {
     public CreateEmployee(ts: pg.PoolClient, p: Employee): Promise<EmployeeAuthResult> {
         const sqlQuery = `
         INSERT INTO employees(ar_id, fio, login, password)

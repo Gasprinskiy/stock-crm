@@ -1,12 +1,12 @@
 import { RedisClientType } from "redis";
 
-export interface EmployeeCacheInter {
+export interface EmployeeCache {
     Set(empl_id: number, lifeTime: number): Promise<void>;
     InChache(empl_id: number): Promise<boolean>;
     Remove(empl_id: number): Promise<void>;
 }
 
-export class EmployeeCache implements EmployeeCacheInter {
+export class EmployeeCacheImpl implements EmployeeCache {
     private redisClient: RedisClientType;
 
     constructor(client: RedisClientType) {

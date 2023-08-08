@@ -2,12 +2,12 @@ import pg from "pg";
 import { select } from "../../../tools/repository-generic/index.js";
 import { Stock } from "../../entity/stock/entity/entity.js";
 
-export interface StockRepoInter {
+export interface StockRepositoryImplsitory {
     FindStockListByEmployeeID(ts: pg.PoolClient, empl_id: number): Promise<Stock[]>;
     LoadStocks(ts: pg.PoolClient): Promise<Stock[]>
 }
 
-export class StockRepo implements StockRepoInter {
+export class StockRepositoryImpl implements StockRepositoryImplsitory {
     public FindStockListByEmployeeID(ts: pg.PoolClient, empl_id: number): Promise<Stock[]> {
         const sqlQuery = `
         ${this.loadStockQuery}

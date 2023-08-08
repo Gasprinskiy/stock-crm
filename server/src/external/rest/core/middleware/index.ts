@@ -7,19 +7,19 @@ import { Logger } from '../../../../tools/logger/index.js';
 import { responseServerError } from '../../../../tools/external-generic/index.js';
 import { InternalErrorsMap } from '../../../../internal/entity/global/error/index.js';
 import { MiddleWareErrorsMap } from '../../../../internal/entity/middleware/errors/index.js';
-import { EmployeeCacheInter } from '../../../../internal/repository/redis/employee_chache.js';
+import { EmployeeCache } from '../../../../internal/repository/redis/employee_chache.js';
 
 export class ApiMiddleware {
     private log: Logger;
 
     private token_key: string;
     private session_life_seconds: number;
-    private employeeChache: EmployeeCacheInter;
+    private employeeChache: EmployeeCache;
 
     constructor(params:{
         token_key: string, 
-        session_life_day: number
-        employeeChache: EmployeeCacheInter
+        session_life_day: number,
+        employeeChache: EmployeeCache
     }){
         this.log = new Logger("middleware")
 

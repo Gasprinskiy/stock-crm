@@ -6,7 +6,7 @@ import { insert, get, insertReturnID, select, getReturnField } from "../../../to
 import { CountResponse } from "../../entity/global/entity/index.js";
 import { AmountOperation } from "../../entity/product/constant/index.js";
 
-export interface ProductRepoInter {
+export interface ProductRepository {
     GetProductByID(ts: pg.PoolClient, id: number): Promise<Product>;
     CreateProduct(ts: pg.PoolClient, p: CreateProductParam): Promise<number>;
     CreateProductVariation(ts: pg.PoolClient, product_id: number, v_type_id: number): Promise<number>;
@@ -25,7 +25,7 @@ export interface ProductRepoInter {
     // LoadPriceRange(ts: pgPromise.ITask<object>): Promise<ProductPriceRange>
 }
 
-export class ProductRepository implements ProductRepoInter {
+export class ProductRepositoryImpl implements ProductRepository {
     public GetProductByID(ts: pg.PoolClient, id: number): Promise<Product> {
         const sqlQuery = `
         SELECT pr.product_id, pr.product_name, pr.description, pr.tags, pr.creation_date
