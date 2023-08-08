@@ -1,9 +1,6 @@
 <template>
   <div class="container">
-    <div 
-      v-if="showRouterView"
-      class="router-view" 
-    >
+    <div class="router-view" v-if="showRouterView">
       <side-bar v-if="notAuthRoute"/>
       <router-view/>
     </div>
@@ -17,21 +14,20 @@
 <script setup lang="ts">
 import { inject, onBeforeMount, computed, ref } from "vue"
 import { useRouter, useRoute } from "vue-router"
-import { useStore } from "vuex";
 import { useNotification, useLoadingBar } from 'naive-ui';
 import { useApiRequestHandler } from "../composables/api_request";
+import { useUserStore } from "../store/"
 
-import apiInjectionMap from '../api_worker'
+import { EmployeeApiWorkerInjectionKey } from '../api_worker'
 import appBus from "../shared/app-bus";
-import mutationTypes from "../store/mutation/types";
 
 import ConnectionError from "./components/connection_error.vue"
 import SideBar from "./components/side_bar.vue"
 
-const employeeApiWorker = inject(apiInjectionMap.employee.key)
+const employeeApiWorker = inject(EmployeeApiWorkerInjectionKey)!
 const router = useRouter()
 const route = useRoute()
-const store = useStore()
+const store = useUserStore()
 const notification = useNotification()
 const loading = useLoadingBar()
 
@@ -41,11 +37,10 @@ const apiRequestDone = ref<boolean>(false)
 const notAuthRoute = computed(() => route.name !== "Auth")
 const showRouterView = computed(() => apiRequestDone.value && !hasConnectionError.value)
 
-
 const handlerEmployeeInfoRequest = useApiRequestHandler(employeeApiWorker.getEmployeeInfo)
 const getEmployeeInfo = async () : Promise<void> => {
   const info = await handlerEmployeeInfoRequest()
-  store.commit(mutationTypes.SET_EMPLOYEE_INFO, info)
+  store.set_employee_info(info)
 }
 
 appBus.on('unauthorized-api-request', () => {  

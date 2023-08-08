@@ -1,17 +1,19 @@
 import './assets/style.scss'
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 import router from './router'
-import store from './store'
 import App from './app/index.vue'
-import apiInjectionMap from './api_worker'
+import { InjectionKeysMap, InjectionImplMap } from './api_worker'
 
 const app = createApp(App)
+const pinia = createPinia()
 
-Object.keys(apiInjectionMap).forEach(injection => {
-    app.provide(apiInjectionMap[injection].key, apiInjectionMap[injection].implementation)
+Object.keys(InjectionKeysMap).forEach(injection => {
+    app.provide(InjectionKeysMap[injection], InjectionImplMap[injection])
 })
 
 app
 .use(router)
-.use(store)
+.use(pinia)
 .mount('#app')
+

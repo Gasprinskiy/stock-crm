@@ -45,16 +45,15 @@
 <script setup lang="ts">
 import { NCard, NForm, NFormItem, NInput, NButton } from "naive-ui"
 import { inject, ref } from "vue"
-import { useStore } from "vuex"
+import { useUserStore } from "../../store";
 import { AuthParams } from "../../entity/employee/params"
 import { useApiRequestHandler } from "../../composables/api_request";
-import mutationTypes from "../../store/mutation/types";
-import apiInjectionMap from '../../api_worker'
+import { EmployeeApiWorkerInjectionKey } from '../../api_worker'
 import { useRouter } from "vue-router";
 
-const employeeApiWorker = inject(apiInjectionMap.employee.key)
+const employeeApiWorker = inject(EmployeeApiWorkerInjectionKey)!
 const router = useRouter()
-const store = useStore()
+const store = useUserStore()
 
 const authParams = ref<AuthParams>({
   login: null,
@@ -64,7 +63,7 @@ const authParams = ref<AuthParams>({
 const handleLoginRequest = useApiRequestHandler(employeeApiWorker.logIn, authParams.value)
 const logIn = async () => {  
   const info = await handleLoginRequest()
-  store.commit(mutationTypes.SET_EMPLOYEE_INFO, info)
+  store.set_employee_info(info)
   if (info) {
     router.push("/")
   }
