@@ -1,8 +1,13 @@
 <template>
   <div class="container">
-    <div class="router-view" v-if="showRouterView">
-      <side-bar v-if="notAuthRoute"/>
-      <router-view/>
+    <div class="app-view" v-if="showRouterView">
+      <div class="app-bars" v-if="notAuthRoute">
+        <header-bar :employeeLogin="store.employeeInfo?.login"/>
+        <side-bar/>
+      </div>
+      <div :class="routerViewClass">
+        <router-view/>
+      </div>
     </div>
     <connection-error
       v-if="hasConnectionError"
@@ -23,6 +28,7 @@ import appBus from "../shared/app-bus";
 
 import ConnectionError from "./components/connection_error.vue"
 import SideBar from "./components/side_bar.vue"
+import HeaderBar from "./components/header_bar.vue"
 
 const employeeApiWorker = inject(EmployeeApiWorkerInjectionKey)!
 const router = useRouter()
@@ -36,9 +42,10 @@ const apiRequestDone = ref<boolean>(false)
 
 const notAuthRoute = computed(() => route.name !== "Auth")
 const showRouterView = computed(() => apiRequestDone.value && !hasConnectionError.value)
+const routerViewClass = computed(() => notAuthRoute.value ? 'router-view-default' : 'router-view-unathed')
 
-const handlerEmployeeInfoRequest = useApiRequestHandler(employeeApiWorker.getEmployeeInfo)
 const getEmployeeInfo = async () : Promise<void> => {
+  const handlerEmployeeInfoRequest = useApiRequestHandler(employeeApiWorker.getEmployeeInfo)
   const info = await handlerEmployeeInfoRequest()
   store.set_employee_info(info)
 }
@@ -72,21 +79,19 @@ appBus.on('session-expired', () => {
   router.push("/auth")
 })
 
-appBus.on('api-request-started', () => {
+appBus.on('api-request-started', () => {  
   loading.start()
   apiRequestDone.value = false
 })
 
 appBus.on('api-request-finished-successful', () => {
   loading.finish()
-  appBus.all.clear()
   apiRequestDone.value = true
   hasConnectionError.value = false
 })
 
 appBus.on('api-request-finished-unsuccessful', () => {
   loading.error()
-  appBus.all.clear()
   apiRequestDone.value = true
   hasConnectionError.value = false
 })
@@ -101,9 +106,23 @@ onBeforeMount(async () => await getEmployeeInfo())
 </script>
 
 <style scoped lang="scss">
-  .router-view {
+  .app-view {
     width: 100%;
     height: 100%;
     display: flex;
+    .app-bars {
+      width: 100%;
+    }
+    .router-view-unathed {
+      width: 100%;
+      height: 100%;
+    }
+    .router-view-default {
+      width: calc(100% - $side-bar-width);
+      height: calc(100% - $header-height);
+      position: absolute;
+      left: $side-bar-width;
+      top: $header-height;
+    }
   }
 </style>
