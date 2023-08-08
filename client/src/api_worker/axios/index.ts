@@ -1,5 +1,5 @@
 import axios from "axios"
-import appBus from "../../shared/app-bus"
+import appBus from "@/shared/app-bus"
 
 const instance = axios.create({
     baseURL: 'http://127.0.0.3:3000',

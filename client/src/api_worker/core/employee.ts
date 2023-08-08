@@ -1,6 +1,6 @@
 import { InjectionKey } from 'vue'
-import { EmployeeAuthResult } from "../../entity/employee/entity";
-import { AuthParams } from "../../entity/employee/params";
+import { EmployeeAuthResult } from "@/entity/employee/entity";
+import { AuthParams } from "@/entity/employee/params";
 import { handleApiPostRequest, handleApiGetRequest } from "../axios";
 
 export const injectionKey = Symbol() as InjectionKey<EmployeeApiWorker>

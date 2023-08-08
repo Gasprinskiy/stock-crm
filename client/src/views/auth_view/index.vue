@@ -45,10 +45,10 @@
 <script setup lang="ts">
 import { NCard, NForm, NFormItem, NInput, NButton } from "naive-ui"
 import { inject, ref } from "vue"
-import { useUserStore } from "../../store";
-import { AuthParams } from "../../entity/employee/params"
-import { useApiRequestHandler } from "../../composables/api_request";
-import { EmployeeApiWorkerInjectionKey } from '../../api_worker'
+import { useUserStore } from "@/store";
+import { AuthParams } from "@/entity/employee/params"
+import { useApiRequestHandler } from "@/composables/api_request";
+import { EmployeeApiWorkerInjectionKey } from '@/api_worker'
 import { useRouter } from "vue-router";
 
 const employeeApiWorker = inject(EmployeeApiWorkerInjectionKey)!

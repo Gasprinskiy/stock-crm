@@ -1,4 +1,4 @@
-import { Stock } from "../../entity/stock/entity";
+import { Stock } from "@/entity/stock/entity";
 import { handleApiGetRequest } from "../axios";
 
 export interface StockApiWorker {

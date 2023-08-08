@@ -8,13 +8,13 @@
 // import { useNotification } from "naive-ui"
 // import { inject, ref } from "vue"
 // import { useRouter } from "vue-router"
-// import apiInjectionMap from '../../api_worker'
-// import { AuthParams } from "../../entity/employee/params"
+// import {  }
+// // import { AuthParams } from "@/entity/employee/params"
 
-// const employeeApiWorker = inject(apiInjectionMap.employee.key)
-// const notification = useNotification()
-// const router = useRouter()
-// // const state = useStore()
+// // const employeeApiWorker = inject(apiInjectionMap.employee.key)
+// // const notification = useNotification()
+// // const router = useRouter()
+// // // const state = useStore()
 
 
 
