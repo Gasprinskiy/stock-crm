@@ -20,12 +20,9 @@ export class StockUsecase implements StockUsecaseInter {
     }
 
     FindStockListByEmployeeID(ts: pg.PoolClient, empl_id: number): Promise<Stock[]> {
-        const lf : LoggerFields = {
-            "empl_id": empl_id
-        }
         return handleRepoDefaultError(() => {
             return this.repository.Stock.FindStockListByEmployeeID(ts, empl_id)
-        }, this.log.WithFields(lf), "не удалось загрузить список складов по ID сотрудника")
+        }, this.log, "не удалось загрузить список складов по ID сотрудника")
     }
 
     LoadStocks(ts: pg.PoolClient): Promise<Stock[]> {
