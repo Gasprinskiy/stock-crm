@@ -20,17 +20,17 @@ export class EmployeeUsecase {
     }
 
     // CreateEmployee создать работника
-    public async CreateEmployee(ts: pg.PoolClient, p: Employee): Promise<EmployeeAuthResult> {
+    public async CreateEmployee(sm: pg.PoolClient, p: Employee): Promise<EmployeeAuthResult> {
         p.password = createHashPassword(p.password)
         p.login = this.createLogin(p.fio)
 
         try {
-            await this.repository.Employee.GetEmployeeByLogin(ts, p.login)
+            await this.repository.Employee.GetEmployeeByLogin(sm, p.login)
             throw EmployeeErrorsMap.EmployeeAlreadyExist
         } catch(err: any) {
             if (err === InternalErrorsMap.ErrNoData) {
                 return handleRepoDefaultError(() => {
-                    return this.repository.Employee.CreateEmployee(ts, p)
+                    return this.repository.Employee.CreateEmployee(sm, p)
                 }, this.log, "не удалось создать нового сотрудника")
             }
             throw err
@@ -38,13 +38,13 @@ export class EmployeeUsecase {
     }
 
     // LogIn авторизация
-    public async LogIn(ts: pg.PoolClient, p: AuthParams): Promise<EmployeeAuthResult> {        
+    public async LogIn(sm: pg.PoolClient, p: AuthParams): Promise<EmployeeAuthResult> {        
         const lf: LoggerFields = {
             "auth_login": p.login
         } 
         // поиск по логину
         try {
-            const response = await this.repository.Employee.GetEmployeeByLogin(ts, p.login)
+            const response = await this.repository.Employee.GetEmployeeByLogin(sm, p.login)
 
             // проверка захешированного пароля
             const passwordCorrect = checkHashPassword(response.password, p.password)

@@ -13,9 +13,9 @@ export class StatisticsUsecase {
         this.log = new Logger("statistics")
     }
 
-    LoadCommonStatistics(ts: pg.PoolClient) :  Promise<CommonStatistics[]> {
+    LoadCommonStatistics(sm: pg.PoolClient) :  Promise<CommonStatistics[]> {
         return handleRepoDefaultError(() => {
-            return this.repository.Statistics.LoadCommonStatistics(ts)
+            return this.repository.Statistics.LoadCommonStatistics(sm)
         }, this.log, "не удалось загрузить статистику")
     }
 }

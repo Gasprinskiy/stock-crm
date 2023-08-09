@@ -1,9 +1,9 @@
 import { InternalErrorsMap }  from "../../internal/entity/global/error/index.js";
 import pg from "pg";
 
-export const select = async <T>(ts: pg.PoolClient, query: string, args?: any[]) : Promise<T[]> => {
+export const select = async <T>(sm: pg.PoolClient, query: string, args?: any[]) : Promise<T[]> => {
     try {
-        const response = await ts.query(query, args)        
+        const response = await sm.query(query, args)        
         if (response.rows.length <= 0) {
             throw InternalErrorsMap.ErrNoData
         }
@@ -14,9 +14,9 @@ export const select = async <T>(ts: pg.PoolClient, query: string, args?: any[]) 
     }
 }
 
-export const get = async <T>(ts: pg.PoolClient, query: string, args?: any[]) : Promise<T> => {
+export const get = async <T>(sm: pg.PoolClient, query: string, args?: any[]) : Promise<T> => {
     try {
-        const response = await ts.query(query, args)
+        const response = await sm.query(query, args)
         if (response.rows.length <= 0) {
             throw InternalErrorsMap.ErrNoData
         }
@@ -27,9 +27,9 @@ export const get = async <T>(ts: pg.PoolClient, query: string, args?: any[]) : P
     }
 }
 
-export const getReturnField = async <T>(ts: pg.PoolClient, query: string, field: keyof pg.QueryResultRow, args?: any[]) : Promise<T> => {
+export const getReturnField = async <T>(sm: pg.PoolClient, query: string, field: keyof pg.QueryResultRow, args?: any[]) : Promise<T> => {
     try {
-        const response = await ts.query(query, args)
+        const response = await sm.query(query, args)
         if (response.rows.length <= 0) {
             throw InternalErrorsMap.ErrNoData
         }
@@ -40,9 +40,9 @@ export const getReturnField = async <T>(ts: pg.PoolClient, query: string, field:
     }
 }
 
-export const insert = async <T>(ts: pg.PoolClient, query: string, returnResult: boolean = false, args?: any[]) : Promise<T|any> => {
+export const insert = async <T>(sm: pg.PoolClient, query: string, returnResult: boolean = false, args?: any[]) : Promise<T|any> => {
     try {
-        const response = await ts.query(query, args)
+        const response = await sm.query(query, args)
         if (returnResult) {
             return response.rows[0]
         }
@@ -51,9 +51,9 @@ export const insert = async <T>(ts: pg.PoolClient, query: string, returnResult: 
     }
 }
 
-export const insertReturnID = async (ts: pg.PoolClient, query: string, returnKey: keyof pg.QueryResultRow, args?: any[]) : Promise<number> => {
+export const insertReturnID = async (sm: pg.PoolClient, query: string, returnKey: keyof pg.QueryResultRow, args?: any[]) : Promise<number> => {
     try {
-        const response = await ts.query(query, args)
+        const response = await sm.query(query, args)
         return response.rows[0][returnKey]
     } catch(err: any) {
         throw err

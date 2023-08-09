@@ -8,7 +8,7 @@ export interface ApiMethod {
     handlers: RequestHandler;
 }
 
-export interface DefaultApiHandler {
+export interface DefaultApiHandler {    
     Init(): void;
 }
 

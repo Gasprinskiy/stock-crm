@@ -3,11 +3,11 @@ import { CommonStatistics } from "../../entity/statistics/entity/index.js";
 import { select } from '../../../tools/repository-generic/index.js';
 
 export interface StatisticsRepository {
-    LoadCommonStatistics(ts: pg.PoolClient) : Promise<CommonStatistics[]>;
+    LoadCommonStatistics(sm: pg.PoolClient) : Promise<CommonStatistics[]>;
 }
 
 export class StatisticsRepositoryImpl implements StatisticsRepository {
-    LoadCommonStatistics(ts: pg.PoolClient) :  Promise<CommonStatistics[]> {
+    LoadCommonStatistics(sm: pg.PoolClient) :  Promise<CommonStatistics[]> {
         const sqlQuery = `
         SELECT 
             SUM(pp.price) as sales_sum, 
@@ -18,6 +18,6 @@ export class StatisticsRepositoryImpl implements StatisticsRepository {
         FROM product$sales psa
           JOIN product$price pp ON(pp.variation_id = psa.variation_id)
         `  
-        return select(ts, sqlQuery)
+        return select(sm, sqlQuery)
     }
 }

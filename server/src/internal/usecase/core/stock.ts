@@ -13,15 +13,15 @@ export class StockUsecase {
         this.log = new Logger("stock")
     }
 
-    FindStockListByEmployeeID(ts: pg.PoolClient, empl_id: number): Promise<Stock[]> {
+    FindStockListByEmployeeID(sm: pg.PoolClient, empl_id: number): Promise<Stock[]> {
         return handleRepoDefaultError(() => {
-            return this.repository.Stock.FindStockListByEmployeeID(ts, empl_id)
+            return this.repository.Stock.FindStockListByEmployeeID(sm, empl_id)
         }, this.log, "не удалось загрузить список складов по ID сотрудника")
     }
 
-    LoadStocks(ts: pg.PoolClient): Promise<Stock[]> {
+    LoadStocks(sm: pg.PoolClient): Promise<Stock[]> {
         return handleRepoDefaultError(() => {
-            return this.repository.Stock.LoadStocks(ts)
+            return this.repository.Stock.LoadStocks(sm)
         }, this.log, "не удалось загрузить список складов")
     }
 }
