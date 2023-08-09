@@ -1,5 +1,4 @@
 import pg from "pg";
-
 import { Repository } from "../../repository/index.js";
 import { AuthParams } from "../../entity/employee/params/index.js"; 
 import { Employee, EmployeeAuthResult } from "../../entity/employee/entity/index.js";
@@ -11,12 +10,7 @@ import { handleRepoDefaultError } from "../../../tools/usecase-generic/index.js"
 import { translitLowercaseRuToEn } from "../../../tools/translit/index.js"
 
 
-interface EmployeeUsecaseInter {
-    CreateEmployee(ts: pg.PoolClient, p: Employee): Promise<EmployeeAuthResult | Error>;
-    LogIn(ts: pg.PoolClient, p: AuthParams): Promise<EmployeeAuthResult | Error>;
-}
-
-export class EmployeeUsecase implements EmployeeUsecaseInter {
+export class EmployeeUsecase {
     private repository: Repository;
     private log: Logger;
 

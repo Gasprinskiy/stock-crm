@@ -4,13 +4,7 @@ import { Logger, LoggerFields } from '../../../tools/logger/index.js';
 import { handleRepoDefaultError } from "../../../tools/usecase-generic/index.js";
 import { Stock } from "../../entity/stock/entity/entity.js";
 
-
-interface StockUsecaseInter {
-    FindStockListByEmployeeID(ts: pg.PoolClient, empl_id: number): Promise<Stock[]>;
-    LoadStocks(ts: pg.PoolClient): Promise<Stock[]>;
-}
-
-export class StockUsecase implements StockUsecaseInter {
+export class StockUsecase {
     private repository: Repository;
     private log: Logger;
 

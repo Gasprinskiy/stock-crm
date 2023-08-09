@@ -10,15 +10,7 @@ import { DistributionStockID } from '../../entity/stock/constant/index.js';
 import { caclLoadParamsOffset } from '../../../tools/calc/index.js';
 import { date_time_format } from '../../../tools/datefunctions/index.js';
 
-interface ProdcuctUsecaseInter {
-    GetProductByID(ts: pg.PoolClient, id: number): Promise<Product>;
-    CreateProduct(ts: pg.PoolClient, p: CreateProductParam, employee_login: string): Promise<number>;
-    FindProductList(ts: pg.PoolClient, p: FindProductListParam, stock_id: number): Promise<ProductListResponse>;
-    SendProductsToStockRecieve(ts: pg.PoolClient, p: ProductMovementParam, employee_login: string): Promise<number>;
-    FindProductMovemetnHistory(ts: pg.PoolClient, p: FindProductMovemetnHistoryParam) : Promise<ProductMovement[]>
-}
-
-export class ProductUsecase implements ProdcuctUsecaseInter {
+export class ProductUsecase {
     private repository: Repository;
     private log: Logger;
 
@@ -27,7 +19,7 @@ export class ProductUsecase implements ProdcuctUsecaseInter {
         this.log = new Logger("product")
     }
 
-    public async GetProductByID(ts: pg.PoolClient, id: number): Promise<Product> {
+    public GetProductByID(ts: pg.PoolClient, id: number): Promise<Product> {
         return handleRepoDefaultError(() => {
             return this.repository.Product.GetProductByID(ts, id)
         }, this.log, "не удалось получить продукт по ID")
