@@ -22,7 +22,7 @@ export class EmployeeRepositoryImpl implements EmployeeRepository {
         SELECT e.empl_id, e.ar_id, e.fio, e.login, e.password
         FROM employees e
         WHERE e.login = $1
-        ADNE e.deleted = false`
+        AND e.deleted = false`
 
         return get(sm, sqlQuery, [login])
     }
