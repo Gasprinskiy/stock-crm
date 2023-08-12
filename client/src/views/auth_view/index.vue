@@ -1,5 +1,5 @@
 <template>
-  <div class="auth-container full-centered">
+  <div class="auth-container">
       <n-card class="auth-card">
         <n-form 
           class="auth-from"
@@ -61,7 +61,7 @@ const authParams = ref<AuthParams>({
 })
 
 const handleLoginRequest = useApiRequestHandler(employeeApiWorker.logIn, authParams.value)
-const logIn = async () => {  
+const logIn = async () : Promise<void>  => {  
   const info = await handleLoginRequest()
   store.set_employee_info(info)
   if (info) {
@@ -73,6 +73,10 @@ const logIn = async () => {
 
 <style scoped lang="scss">
   .auth-container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     .n-card {
       max-width: 500px;
     }
