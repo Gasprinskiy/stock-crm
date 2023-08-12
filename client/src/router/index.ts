@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import AuthView from '../views/auth_view/index.vue'
-import HomeView from '../views/home_view/index.vue'
+import AuthView from '@/views/auth_view/index.vue'
+import HomeView from '@/views/home_view/index.vue'
 
 const defaultRoutes = [
     {
