@@ -1,12 +1,14 @@
 <template>
   <div class="container">
-    <div class="app-view" v-if="showRouterView">
+    <div class="app-view" v-if="!hasConnectionError">
       <div class="app-bars" v-if="notAuthRoute">
         <header-bar/>
         <side-bar/>
       </div>
       <div :class="routerViewClass">
-        <router-view/>
+        <n-scrollbar>
+          <router-view/>
+        </n-scrollbar>
       </div>
     </div>
     <connection-error
@@ -19,7 +21,7 @@
 <script setup lang="ts">
 import { inject, onBeforeMount, computed, ref } from "vue"
 import { useRouter, useRoute } from "vue-router"
-import { useNotification, useLoadingBar } from 'naive-ui';
+import { useNotification, useLoadingBar, NScrollbar } from 'naive-ui';
 import { useApiRequestHandler } from "@/composables/api_request";
 import { useUserStore } from "@/store/"
 
@@ -41,8 +43,7 @@ const hasConnectionError = ref<boolean>(false)
 const apiRequestDone = ref<boolean>(false)
 
 const notAuthRoute = computed(() => route.name !== "Auth")
-const showRouterView = computed(() => apiRequestDone.value && !hasConnectionError.value)
-const routerViewClass = computed(() => notAuthRoute.value ? 'router-view-default' : 'router-view-unathed')
+const routerViewClass = computed(() => notAuthRoute.value ? 'router-view-default' : 'router-view-unauthed')
 
 const getEmployeeInfo = async () : Promise<void> => {
   const handlerEmployeeInfoRequest = useApiRequestHandler(employeeApiWorker.getEmployeeInfo)
@@ -113,7 +114,7 @@ onBeforeMount(async () => await getEmployeeInfo())
     .app-bars {
       width: 100%;
     }
-    .router-view-unathed {
+    .router-view-unauthed {
       width: 100%;
       height: 100%;
     }
@@ -123,6 +124,10 @@ onBeforeMount(async () => await getEmployeeInfo())
       position: absolute;
       left: $side-bar-width;
       top: $header-height;
+    }
+
+    .router-scroll-bar {
+      padding: 32px;
     }
   }
 </style>
