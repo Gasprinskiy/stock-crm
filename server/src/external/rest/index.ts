@@ -7,6 +7,7 @@ import { ApiMiddleware } from "./core/middleware/index.js";
 import { StockHandler } from './core/stock.js';
 import { DefaultApiHandler } from '../../internal/entity/rest/entity/index.js';
 import { SessionManager } from '../../cmd/init/session_manager/index.js';
+import { StatisticsHandler } from './core/statistics.js';
 
 
 
@@ -23,7 +24,8 @@ export class ApiHandler {
         this.handlers = [
             new ProductHandler(params),
             new EmployeeHandler(params),
-            new StockHandler(params)
+            new StockHandler(params),
+            new StatisticsHandler(params)
         ]
     }
 
