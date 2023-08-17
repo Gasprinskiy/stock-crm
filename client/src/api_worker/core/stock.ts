@@ -1,12 +1,13 @@
-import { Stock } from "@/entity/stock/entity";
+import { LoadParams } from './../../../../server/src/internal/entity/global/entity/index';
+import { StockListResponse } from "@/entity/stock/entity";
 import { handleApiGetRequest } from "../axios";
 
 export interface StockApiWorker {
-    findEmployeeStockList(): Promise<Stock[]>;
+    findEmployeeStockList(loadParams: LoadParams): Promise<StockListResponse>;
 }
 
 export class StockApiWorkerImpl implements StockApiWorker {
-    findEmployeeStockList(): Promise<Stock[]> {
-        return handleApiGetRequest("find_empl_stocks")
+    findEmployeeStockList(loadParams: LoadParams): Promise<StockListResponse> {
+        return handleApiGetRequest("find_empl_stocks", loadParams)
     }
 }
