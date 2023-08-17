@@ -24,14 +24,28 @@
 </template>
 
 <script setup lang="ts">
-import { NDataTable, DataTableColumns, NButton, NPagination, NTag } from "naive-ui";
+import { 
+  NDataTable, 
+  type DataTableColumns,
+  type PaginationSizeOption,
+  type MenuOption,
+  NPagination, 
+  NTag, 
+  NDropdown,
+  NButton 
+} from "naive-ui";
+import { Product } from "@vicons/carbon";
+import { ListOutline } from "@vicons/ionicons5";
+import { History20Regular } from "@vicons/fluent";
 import { inject, ref, onBeforeMount, h, computed } from "vue";
 import { StockApiWorkerInjectionKey } from "@/api_worker";
 import { useApiRequestHandler } from "@/composables/api_request";
 import { Stock } from "@/entity/stock/entity";
 // import { useRouter } from "vue-router";
+import { useRenderIcon } from '@/composables/render_icon';
 
 const stocksApiWorker = inject(StockApiWorkerInjectionKey)!
+const renderIcon = useRenderIcon()
 
 // const router = useRouter()
 
@@ -43,7 +57,7 @@ const paginationParams = ref({
   pageSize: 10,
 })
 
-const pageSizeOptions = [
+const pageSizeOptions : PaginationSizeOption[] = [
   {
     label: "по 10 записей",
     value: 10,
@@ -58,11 +72,24 @@ const pageSizeOptions = [
   },
 ]
 
+const dropDownMenuOptions : MenuOption[] = [
+  {
+    label: "Товары",
+    key: "/products",
+    icon: renderIcon(Product)
+  },
+  {
+    label: "История перемещений",
+    key: "/movement_history",
+    icon: renderIcon(History20Regular)
+  },
+]
+
 const hasMorePages = computed(() => pageCount.value > 1)
 
 const handleLoadEmplStockList = useApiRequestHandler(stocksApiWorker.findEmployeeStockList)
 
-const createStockListTableColumns = (goToStock: (row: Stock) => void) : DataTableColumns<Stock> => {
+const createStockListTableColumns = (goToStock: (row: Stock, key: string) => void) : DataTableColumns<Stock> => {
   return [
     {
       title: '№',
@@ -77,13 +104,13 @@ const createStockListTableColumns = (goToStock: (row: Stock) => void) : DataTabl
       key: 'address'
     },
     {
-      title: 'Количество продуктов',
+      title: 'Количество товара',
       key: 'product_count',
       render: (row) => {
         return h(
           NTag,
           {
-            type: row.product_count ? 'success' : 'error'
+            type: row.product_count ? 'success' : 'warning'
           },
           {
             default: () => row.product_count || 0
@@ -92,18 +119,37 @@ const createStockListTableColumns = (goToStock: (row: Stock) => void) : DataTabl
       }
     },
     {
+      title: 'Товаров на приемке',
+      key: 'movement_in_count',
+      render: (row) => {
+        return h(
+          NTag,
+          {
+            type: row.movement_in_count ? 'warning' : 'success'
+          },
+          {
+            default: () => row.movement_in_count || 0
+          }
+        )
+      }
+    },
+    {
       key: 'actions',
       render: (row) => {
         return h(
-            NButton,
+            NDropdown,
             {
-              strong: true,
-              tertiary: true,
-              size: 'small',
-              onClick: () => goToStock(row),
+              options: dropDownMenuOptions,
+              onSelect: (key: string) => goToStock(row, key)
             },
             { 
-              default: () => 'Перейти' 
+              default: () => h(
+                NButton,
+                {
+                  renderIcon: renderIcon(ListOutline),
+                  round: true
+                }
+              )
             },
         )
       }
@@ -111,8 +157,10 @@ const createStockListTableColumns = (goToStock: (row: Stock) => void) : DataTabl
   ]
 }
 
-const goToStock = (row: Stock): void => {
+const goToStock = (row: Stock, key: string): void => {
   console.log(row)
+  console.log(key);
+  
 }
 
 const loadEmplStockList = async () : Promise<void> => {
