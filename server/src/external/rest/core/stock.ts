@@ -38,15 +38,22 @@ export class StockHandler implements DefaultApiHandler {
         )
 
         this.app.get(
-            "/load_stocks",
+            "/load_stocks?limit=:limit&offset=:offset",
             this.middleware.IsAuthorized.bind(this.middleware),
             this.loadStocks.bind(this)
         )
     }
 
-    private findStockListByEmployeeID(req: Request, res: Response): void {
+    private findStockListByEmployeeID(req: Request, res: Response): void {        
         handleApiRequest((sm) => {
-            return this.usecase.Stock.FindStockListByEmployeeID(sm, req.user.empl_id)
+            return this.usecase.Stock.FindStockListByEmployeeID(
+                sm, 
+                req.user.empl_id, 
+                {
+                    limit: Number(req.query.limit), 
+                    offset: Number(req.query.offset)
+                }
+            )
         }, this.log, this.sessionManager, {req: req, res: res})
     }
 
