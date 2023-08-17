@@ -8,5 +8,5 @@
 
 <script setup lang="ts">
 import { NNotificationProvider, NLoadingBarProvider } from 'naive-ui'
-import app from './app.vue'
+import app from '@/app/app.vue'
 </script>
