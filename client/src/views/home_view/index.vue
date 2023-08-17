@@ -1,8 +1,8 @@
 <template>
-  <div class="home-container statistics inner-content">
-    <div class="app-h1">
-      Cтатистика
-    </div>
+  <common-template
+    :icon="HomeOutline"
+    title="Главная"
+  >
     <div class="statistics-body">
       <n-card 
         class="statistics-half-space statistics-space"
@@ -28,18 +28,19 @@
         </n-statistic>
       </n-card>
     </div>
-  </div>
+  </common-template>
 </template>
 
 <script setup lang="ts">
 import { NStatistic, NCard, NNumberAnimation, NIcon } from "naive-ui";
-import { CashOutline } from "@vicons/ionicons5";
+import { CashOutline, HomeOutline } from "@vicons/ionicons5";
 import { Product } from "@vicons/carbon";
 import { ReceiptMoney20Regular } from "@vicons/fluent"
 import { computed, inject, onBeforeMount, ref } from "vue";
 import { StatisticsApiWorkerInjectionKey } from "@/api_worker";
 import { CommonStatistics, StatisticsView } from "@/entity/statistics/entity";
 import { useApiRequestHandler } from "@/composables/api_request";
+import CommonTemplate from "@/templates/ViewCommonTemplate.vue";
 
 const statisticsApiWorker = inject(StatisticsApiWorkerInjectionKey)!
 
@@ -87,25 +88,18 @@ onBeforeMount(async () => await loadCommonStatistics())
 </script>
 
 <style scoped lang="scss">
-  .statistics {
+  .statistics-body {
     width: 100%;
-  
-    .statistics-body {
-      width: 100%;
-      display: flex;
-      flex-wrap: wrap;
-      // flex-grow: 1;
-      gap: 10px;
-
-      .statistics-space {
-        min-width: 215px;
-        width: calc(33% - 5px);
-        flex-grow: 1;
-      }
-
-      .statistics-icon {
-        margin-right: 5px;
-      }
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    .statistics-space {
+      min-width: 215px;
+      width: calc(33% - 5px);
+      flex-grow: 1;
+    }
+    .statistics-icon {
+      margin-right: 5px;
     }
   }
 </style>

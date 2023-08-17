@@ -1,8 +1,8 @@
 <template>
-  <div class="stocks-container inner-content">
-    <div class="app-h1">
-      Список складов
-    </div>
+  <common-template
+    :icon="GridOutline"
+    title="Список складов"
+  >
     <div class="stocks-table">
       <n-data-table
         :data="stockList || []"
@@ -20,7 +20,7 @@
         show-size-picker
       />
     </div>
-  </div>
+  </common-template>
 </template>
 
 <script setup lang="ts">
@@ -35,7 +35,7 @@ import {
   NButton 
 } from "naive-ui";
 import { Product } from "@vicons/carbon";
-import { ListOutline } from "@vicons/ionicons5";
+import { ListOutline, GridOutline } from "@vicons/ionicons5";
 import { History20Regular } from "@vicons/fluent";
 import { inject, ref, onBeforeMount, h, computed } from "vue";
 import { StockApiWorkerInjectionKey } from "@/api_worker";
@@ -43,10 +43,10 @@ import { useApiRequestHandler } from "@/composables/api_request";
 import { Stock } from "@/entity/stock/entity";
 // import { useRouter } from "vue-router";
 import { useRenderIcon } from '@/composables/render_icon';
+import CommonTemplate from "@/templates/ViewCommonTemplate.vue";
 
 const stocksApiWorker = inject(StockApiWorkerInjectionKey)!
 const renderIcon = useRenderIcon()
-
 // const router = useRouter()
 
 const stockList = ref<Stock[] | null>(null)
@@ -71,7 +71,6 @@ const pageSizeOptions : PaginationSizeOption[] = [
     value: 20,
   },
 ]
-
 const dropDownMenuOptions : MenuOption[] = [
   {
     label: "Товары",
@@ -88,7 +87,6 @@ const dropDownMenuOptions : MenuOption[] = [
 const hasMorePages = computed(() => pageCount.value > 1)
 
 const handleLoadEmplStockList = useApiRequestHandler(stocksApiWorker.findEmployeeStockList)
-
 const createStockListTableColumns = (goToStock: (row: Stock, key: string) => void) : DataTableColumns<Stock> => {
   return [
     {
