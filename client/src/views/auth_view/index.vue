@@ -60,9 +60,9 @@ const authParams = ref<AuthParams>({
   password: null
 })
 
-const handleLoginRequest = useApiRequestHandler(employeeApiWorker.logIn, authParams.value)
+const handleLoginRequest = useApiRequestHandler(employeeApiWorker.logIn)
 const logIn = async () : Promise<void>  => {  
-  const info = await handleLoginRequest()
+  const info = await handleLoginRequest(authParams.value)
   store.set_employee_info(info)
   if (info) {
     router.push("/")

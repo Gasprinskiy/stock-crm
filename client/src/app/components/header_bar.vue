@@ -35,9 +35,6 @@ import { useApiRequestHandler } from '@/composables/api_request';
 
 import { EmployeeApiWorkerInjectionKey } from '@/api_worker'
 
-const props = defineProps({
-    employeeLogin: String
-})
 const store = useUserStore()
 const router = useRouter()
 const route = useRoute()

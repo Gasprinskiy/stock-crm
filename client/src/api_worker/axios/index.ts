@@ -62,9 +62,9 @@ export const handleApiPostRequest = async <T>(path: string, params?: any): Promi
     }
 }
 
-export const handleApiGetRequest = async <T>(path: string): Promise<T> => {
+export const handleApiGetRequest = async <T>(path: string, params?: any): Promise<T> => {
     try {
-        return await instance.get(`/${path}`)
+        return await instance.get(`/${path}`, {params: params})
     } catch(err: any) {
         throw err
     }

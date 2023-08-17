@@ -9,7 +9,6 @@
     >
       <n-menu
         class="layout-sider"
-        v-model:value="routePath"
         :options="menuOptions"
         key-field="key"
         label-field="lebel"
@@ -23,23 +22,18 @@
 <script setup lang="ts">
 import { NLayoutSider, NLayout, NMenu } from 'naive-ui';
 import type { MenuOption } from 'naive-ui'
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { HomeOutline, GridOutline, CashOutline, PersonOutline } from "@vicons/ionicons5";
 import { ConnectionTwoWay, ListDropdown } from "@vicons/carbon"
-
 import { useRenderIcon } from "@/composables/render_icon"
 import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '@/store';
-
 import { AccessRight } from '@/entity/employee/constant';
 
-// const props = 
 const store = useUserStore()
 const router = useRouter()
 const route = useRoute()
 const renderIcon = useRenderIcon()
-
-const routePath = ref(route.path)
 
 const menuOptions = computed((): MenuOption[] => {
   return [

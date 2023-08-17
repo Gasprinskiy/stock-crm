@@ -33,7 +33,7 @@ export class ProductUsecase {
             const productID = await this.repository.Product.CreateProduct(sm, p)
 
             try {
-                for (let i in p.v_type_list) {
+                for (const i in p.v_type_list) {
                     const v_type = p.v_type_list[i]
                     const variationIDResponse = await this.repository.Product.CreateProductVariation(sm, productID, v_type.id)
                     await this.repository.Product.AddProductToStock(sm, {

@@ -3,7 +3,6 @@ import pg from "pg";
 import { Product, ProductMovement } from "../../entity/product/entity/index.js";
 import { AddProductToStockParam, CreateProductParam, FindProductListParam, FindProductMovemetnHistoryParam, ProductMovementParam } from "../../entity/product/params/index.js"
 import { insert, get, insertReturnID, select, getReturnField } from "../../../tools/repository-generic/index.js";
-import { CountResponse } from "../../entity/global/entity/index.js";
 import { AmountOperation } from "../../entity/product/constant/index.js";
 
 export interface ProductRepository {
