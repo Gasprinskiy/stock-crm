@@ -13,7 +13,8 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "noImplicitAny": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    // "moduleResolution": "Node"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"],
