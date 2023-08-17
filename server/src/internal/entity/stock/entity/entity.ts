@@ -4,6 +4,7 @@ export interface Stock {
     name: string;
     address: string;
     product_count: number;
+    movement_in_count: number;
 }
 
 export interface StockListResponse {

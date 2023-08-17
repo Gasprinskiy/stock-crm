@@ -16,9 +16,11 @@ export class StockRepositoryImpl implements StockRepositoryImplsitory {
             st.stock_id, 
             st.stock_name as name, 
             st.address,
+            CAST( SUM(psm.amount) AS INTEGER) as movement_in_count,
             CAST( SUM(pst.amount) as INTEGER ) as product_count
         FROM stocks st
             LEFT OUTER JOIN product$stocks pst ON(pst.stock_id = st.stock_id)
+            LEFT OUTER JOIN product$stock_movements psm ON(psm.receiving_stock_id = st.stock_id AND psm.received = false)
             ${this.stockListByEmployeeIDFilterQuery(empl_id, loadParams)}`
 
         return select(sm, sqlQuery)
