@@ -1,12 +1,13 @@
 <template>
   <div class="home-container statistics inner-content">
-    <div class="statistics-header app-h1">
+    <div class="app-h1">
       Cтатистика
     </div>
     <div class="statistics-body">
       <n-card 
         class="statistics-half-space statistics-space"
-        v-for="item in statisticsList"
+        v-for="(item, index) in statisticsList"
+        :key="index"
       >
         <n-statistic
           :label="item.label"
@@ -88,10 +89,7 @@ onBeforeMount(async () => await loadCommonStatistics())
 <style scoped lang="scss">
   .statistics {
     width: 100%;
-    .statistics-header {
-      margin-bottom: 20px;
-    }
-
+  
     .statistics-body {
       width: 100%;
       display: flex;
