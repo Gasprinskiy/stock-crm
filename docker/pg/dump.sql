@@ -276,7 +276,8 @@ CREATE TABLE public.employees (
     ar_id integer NOT NULL,
     fio character varying NOT NULL,
     login character varying NOT NULL,
-    password character varying NOT NULL
+    password character varying NOT NULL,
+    deleted boolean DEFAULT false NOT NULL
 );
 
 
@@ -389,6 +390,36 @@ ALTER SEQUENCE public."product$sales_sale_id_seq" OWNED BY public."product$sales
 
 
 --
+-- Name: product$stock_movements; Type: TABLE; Schema: public; Owner: test_db
+--
+
+CREATE TABLE public."product$stock_movements" (
+    mvmnt_id integer NOT NULL,
+    accounting_id integer NOT NULL,
+    receiving_stock_id integer NOT NULL,
+    amount integer NOT NULL,
+    received boolean DEFAULT false NOT NULL,
+    movement_date timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+ALTER TABLE public."product$stock_movements" OWNER TO test_db;
+
+--
+-- Name: product$stock_movements_mvmnt_id_seq; Type: SEQUENCE; Schema: public; Owner: test_db
+--
+
+ALTER TABLE public."product$stock_movements" ALTER COLUMN mvmnt_id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public."product$stock_movements_mvmnt_id_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
 -- Name: product$stocks; Type: TABLE; Schema: public; Owner: test_db
 --
 
@@ -434,6 +465,7 @@ CREATE TABLE public."product$variations" (
     product_id integer NOT NULL,
     v_type_id integer NOT NULL
 );
+
 
 ALTER TABLE public."product$variations" OWNER TO test_db;
 
@@ -620,6 +652,7 @@ COPY public."access$rights" (ar_id, ar_type, decription) FROM stdin;
 2	stock_manager	Управляющий склада
 4	stock_worker	Работник склада
 3	seller	Продавец
+5	distributor	Распределитель товара по складу
 \.
 
 
@@ -642,10 +675,10 @@ COPY public."employee$stocks" (empl_id, stock_id) FROM stdin;
 -- Data for Name: employees; Type: TABLE DATA; Schema: public; Owner: test_db
 --
 
-COPY public.employees (empl_id, ar_id, fio, login, password) FROM stdin;
-1	1	Закиров Исмаил Эркинджонугли	ismail.zakirov	$2b$04$LWw48arSvrwf0y1O1fgZb.fJNSdrOt5pt2ecn7Q3iHbEjsonSXy5y
-2	2	Test Stock Manager	stock.manager	$2b$04$LWw48arSvrwf0y1O1fgZb.fJNSdrOt5pt2ecn7Q3iHbEjsonSXy5y
-4	3	Точно Пидор	tochno.pidor	$2b$04$LWw48arSvrwf0y1O1fgZb.fJNSdrOt5pt2ecn7Q3iHbEjsonSXy5y
+COPY public.employees (empl_id, ar_id, fio, login, password, deleted) FROM stdin;
+1	1	Закиров Исмаил Эркинджонугли	ismail.zakirov	$2b$04$LWw48arSvrwf0y1O1fgZb.fJNSdrOt5pt2ecn7Q3iHbEjsonSXy5y	f
+2	2	Test Stock Manager	stock.manager	$2b$04$LWw48arSvrwf0y1O1fgZb.fJNSdrOt5pt2ecn7Q3iHbEjsonSXy5y	f
+4	3	Точно Пидор	tochno.pidor	$2b$04$LWw48arSvrwf0y1O1fgZb.fJNSdrOt5pt2ecn7Q3iHbEjsonSXy5y	f
 \.
 
 
@@ -672,6 +705,7 @@ COPY public.product (product_id, product_name, description, tags, creation_date,
 69	Печенье Ulker Biscrem	Печенье Biscrem	печенье, сладости	2022-11-04 17:55:48.186709+05	\N	f
 71	Общая тетрадь в клетку	тетрадь в клетку	тетрадь, общая, в клетку	2022-11-10 10:19:07.439953+05	\N	f
 72	Чай Fuse Tea Манго и Ромашка	Чай Fuse Tea со вкусом  манго и ромашки	чай, ice tea, чайный напитон	2022-11-11 16:23:19.273286+05	\N	f
+77	Энергетик Gorilla Classic	энергетический напиток Gorilla с классическим вкусом	gorilla, энергетик, напиток	2023-07-23 21:57:01.520171+05	\N	f
 \.
 
 
@@ -689,6 +723,20 @@ COPY public."product$price" (price_id, variation_id, price, active_till, active_
 --
 
 COPY public."product$sales" (sale_id, product_id, variation_id, stock_id, sold_date, amount) FROM stdin;
+128	2	78	1	2023-08-18 01:20:45.384558+05	1
+\.
+
+
+--
+-- Data for Name: product$stock_movements; Type: TABLE DATA; Schema: public; Owner: test_db
+--
+
+COPY public."product$stock_movements" (mvmnt_id, accounting_id, receiving_stock_id, amount, received, movement_date) FROM stdin;
+4	107	1	14	t	2023-07-28 14:30:14+05
+2	109	3	20	t	2023-07-27 13:30:08+05
+5	106	26	20	f	2023-07-29 21:11:58.077134+05
+6	106	25	20	f	2023-07-29 21:17:18.892672+05
+3	107	1	14	f	2023-07-27 16:30:11+05
 \.
 
 
@@ -698,9 +746,12 @@ COPY public."product$sales" (sale_id, product_id, variation_id, stock_id, sold_d
 
 COPY public."product$stocks" (accounting_id, stock_id, product_id, amount, variation_id) FROM stdin;
 105	1	2	100	78
-106	2	3	142	80
-107	2	2	54	80
 108	3	72	0	82
+109	27	77	30	84
+107	2	2	26	80
+114	1	2	28	80
+110	3	77	20	84
+106	2	3	102	80
 \.
 
 
@@ -714,6 +765,7 @@ COPY public."product$variations" (variation_id, product_id, v_type_id) FROM stdi
 80	3	3
 81	3	6
 82	72	2
+84	77	16
 \.
 
 
@@ -727,6 +779,7 @@ COPY public.stocks (stock_id, stock_name, address) FROM stdin;
 3	Склад 3	Куйлюк 2
 25	Склад 4	Чиланзар 25
 26	Склад 5	Ипподром
+27	Пункт приема и распраделения	Уч кахрамон
 \.
 
 
@@ -770,7 +823,7 @@ COPY public."variation$types" (v_type_id, u_type_id, variation) FROM stdin;
 -- Name: access$rights_ar_id_seq; Type: SEQUENCE SET; Schema: public; Owner: test_db
 --
 
-SELECT pg_catalog.setval('public."access$rights_ar_id_seq"', 4, true);
+SELECT pg_catalog.setval('public."access$rights_ar_id_seq"', 5, true);
 
 
 --
@@ -791,35 +844,42 @@ SELECT pg_catalog.setval('public.newtable_price_id_seq', 155, true);
 -- Name: product$sales_sale_id_seq; Type: SEQUENCE SET; Schema: public; Owner: test_db
 --
 
-SELECT pg_catalog.setval('public."product$sales_sale_id_seq"', 127, true);
+SELECT pg_catalog.setval('public."product$sales_sale_id_seq"', 128, true);
+
+
+--
+-- Name: product$stock_movements_mvmnt_id_seq; Type: SEQUENCE SET; Schema: public; Owner: test_db
+--
+
+SELECT pg_catalog.setval('public."product$stock_movements_mvmnt_id_seq"', 6, true);
 
 
 --
 -- Name: product$stocks$product$list_in_sctock_id_seq; Type: SEQUENCE SET; Schema: public; Owner: test_db
 --
 
-SELECT pg_catalog.setval('public."product$stocks$product$list_in_sctock_id_seq"', 108, true);
+SELECT pg_catalog.setval('public."product$stocks$product$list_in_sctock_id_seq"', 114, true);
 
 
 --
 -- Name: product$variations_variation_id_seq; Type: SEQUENCE SET; Schema: public; Owner: test_db
 --
 
-SELECT pg_catalog.setval('public."product$variations_variation_id_seq"', 82, true);
+SELECT pg_catalog.setval('public."product$variations_variation_id_seq"', 84, true);
 
 
 --
 -- Name: product_product_id_seq; Type: SEQUENCE SET; Schema: public; Owner: test_db
 --
 
-SELECT pg_catalog.setval('public.product_product_id_seq', 72, true);
+SELECT pg_catalog.setval('public.product_product_id_seq', 77, true);
 
 
 --
 -- Name: stocks_id_seq; Type: SEQUENCE SET; Schema: public; Owner: test_db
 --
 
-SELECT pg_catalog.setval('public.stocks_id_seq', 26, true);
+SELECT pg_catalog.setval('public.stocks_id_seq', 27, true);
 
 
 --
@@ -866,6 +926,14 @@ ALTER TABLE ONLY public."product$price"
 
 ALTER TABLE ONLY public."product$sales"
     ADD CONSTRAINT "product$sales_pkey" PRIMARY KEY (sale_id);
+
+
+--
+-- Name: product$stock_movements product$stock_movements_pkey; Type: CONSTRAINT; Schema: public; Owner: test_db
+--
+
+ALTER TABLE ONLY public."product$stock_movements"
+    ADD CONSTRAINT "product$stock_movements_pkey" PRIMARY KEY (mvmnt_id);
 
 
 --
@@ -986,6 +1054,22 @@ ALTER TABLE ONLY public."product$sales"
 
 ALTER TABLE ONLY public."product$sales"
     ADD CONSTRAINT productsales_fk3 FOREIGN KEY (stock_id) REFERENCES public.stocks(stock_id);
+
+
+--
+-- Name: product$stock_movements productstockmovements_fk1; Type: FK CONSTRAINT; Schema: public; Owner: test_db
+--
+
+ALTER TABLE ONLY public."product$stock_movements"
+    ADD CONSTRAINT productstockmovements_fk1 FOREIGN KEY (accounting_id) REFERENCES public."product$stocks"(accounting_id);
+
+
+--
+-- Name: product$stock_movements productstockmovements_fk3; Type: FK CONSTRAINT; Schema: public; Owner: test_db
+--
+
+ALTER TABLE ONLY public."product$stock_movements"
+    ADD CONSTRAINT productstockmovements_fk3 FOREIGN KEY (receiving_stock_id) REFERENCES public.stocks(stock_id);
 
 
 --
