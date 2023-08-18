@@ -23,7 +23,7 @@ export class StockUsecase {
                 limit: loadParams.limit,
             })
 
-            const stocksList = await this.repository.Stock.FindStockListByEmployeeID(sm, empl_id, loadParams)
+            const stocksList = await this.repository.Stock.FindStockProductStatsListByEmployeeID(sm, empl_id, loadParams)
             
             try {
                 const stocksCount = await this.repository.Stock.StockListCountByEmployeeID(sm, empl_id, loadParams)
