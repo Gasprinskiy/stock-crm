@@ -23,7 +23,8 @@
 import { NLayoutSider, NLayout, NMenu } from 'naive-ui';
 import type { MenuOption } from 'naive-ui'
 import { computed } from 'vue';
-import { HomeOutline, GridOutline, CashOutline, PersonOutline } from "@vicons/ionicons5";
+import { Product } from "@vicons/carbon";
+import { HomeOutline, CashOutline, PersonOutline } from "@vicons/ionicons5";
 import { ConnectionTwoWay, ListDropdown } from "@vicons/carbon"
 import { useRenderIcon } from "@/composables/render_icon"
 import { useRoute, useRouter } from 'vue-router';
@@ -49,28 +50,31 @@ const menuOptions = computed((): MenuOption[] => {
       icon: renderIcon(CashOutline),
     },
     {
-      lebel: 'Список складов',
-      key: '/stocks',
+      lebel: 'Товары',
+      key: '/products',
       show: store.check_acces_right(AccessRight.stock_manager, AccessRight.stock_worker),
-      icon: renderIcon(GridOutline),
+      icon: renderIcon(Product),
     },
     {
       lebel: 'Прием/распределениe',
       key: '/distribution',
       show: store.check_acces_right(AccessRight.distributor),
       icon: renderIcon(ConnectionTwoWay),
+      disabled: true
     },
     {
       lebel: 'Работники',
       key: '/employee',
       show: store.check_acces_right(AccessRight.stock_manager),
       icon: renderIcon(PersonOutline),
+      disabled: true
     },
     {
       lebel: 'Вариации товара',
       key: '/distribution',
       show: store.check_acces_right(AccessRight.distributor),
       icon: renderIcon(ListDropdown),
+      disabled: true
     },
   ]
 })
