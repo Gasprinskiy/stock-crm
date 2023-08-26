@@ -26,7 +26,7 @@ import { useApiRequestHandler } from "@/composables/api_request";
 import { useUserStore } from "@/store/"
 
 import { EmployeeApiWorkerInjectionKey } from '@/api_worker'
-import appBus from "@/shared/app-bus";
+import appBus from "@/shared/app_bus";
 
 import ConnectionError from "./components/connection_error.vue"
 import SideBar from "./components/side_bar.vue"
@@ -131,3 +131,4 @@ onBeforeMount(async () => await getEmployeeInfo())
     }
   }
 </style>
+@/shared/app_bus
