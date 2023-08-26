@@ -12,6 +12,7 @@
     max-width: 1920px;
     height: 100vh;
     margin: auto;
+    position: relative;
 }
 
 .full-centered {
@@ -22,12 +23,23 @@
     align-items: center;
 }
 
-.inner-content {
-    padding: 32px;
+.n-scrollbar-content {
+    height: 100%;
+    position: relative;
 }
 
 .app-h1 {
     font-size: 20px;
     font-weight: 500;
     margin-bottom: 20px;
+}
+
+.height-100 {
+    height: 100%;
+}
+
+.tabel-pagination {
+    margin-top: 10px;
+    display: flex;
+    justify-content: flex-end;
 }
