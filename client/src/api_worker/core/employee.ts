@@ -23,5 +23,4 @@ export class EmployeeApiWorkerImpl implements EmployeeApiWorker {
     getEmployeeInfo(): Promise<EmployeeAuthResult> {
         return handleApiGetRequest('employee_info')
     }
-
 }
