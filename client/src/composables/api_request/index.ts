@@ -4,7 +4,7 @@ export const useApiRequestHandler = <T>(callback: (args?: any) => Promise<T>):  
     const notification = useNotification()
 
     return async function(args?: any) : Promise<T | null> {
-        try {        
+        try {  
             return await callback(args)
         } catch(err: any) {
             notification.error({
